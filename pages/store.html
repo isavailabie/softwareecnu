@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商城 - 新鲜食材</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #4ecdc4;
+            --light-bg: #fff0d5;
+            --card-bg: #ffffff;
+            --text-dark: #333333;
+            --text-light: #777777;
+            --border-color: #e0e0e0;
+            --accent-color: #ffd166;
+            --sale-color: #e74c3c;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: var(--light-bg);
+            padding: 0 20px;
+        }
+
+        /* 头部导航 */
+        .header {
+            background-color: white;
+            padding: 15px 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+            padding: 8px 12px;
+            border-radius: 5px;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+            background-color: rgba(255, 107, 107, 0.1);
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: #f5f5f5;
+            border-radius: 30px;
+            padding: 8px 15px;
+            width: 300px;
+        }
+
+        .search-container input {
+            border: none;
+            background: transparent;
+            padding: 8px;
+            width: 100%;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-container button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-light);
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+
+        .search-container button:hover {
+            color: var(--primary-color);
+        }
+
+        /* 商品展示区域 */
+        .section-title {
+            text-align: center;
+            margin: 40px 0 30px;
+            position: relative;
+        }
+
+        .section-title h2 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            display: inline-block;
+            background: white;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-title::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--primary-color), transparent);
+            z-index: 1;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 图片容器 - 关键优化点 */
+        .product-image {
+            height: 220px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+        }
+
+        .product-image img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            transition: transform 0.5s;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+
+        .product-tag {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: var(--sale-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-category {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .product-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .product-description {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            height: 40px;
+            overflow: hidden;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .add-to-cart {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .add-to-cart:hover {
+            background: #ff5252;
+            transform: rotate(90deg);
+        }
+
+        /* 页脚 */
+        .footer {
+            background: white;
+            padding: 40px 0 20px;
+            margin-top: 50px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: var(--text-light);
+            transition: color 0.3s;
+            display: block;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            margin-top: 30px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .search-container {
+                width: 100%;
+                max-width: 500px;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-title h2 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <div class="nav-container">
+                <div class="logo">
+                    <i class="fas fa-carrot"></i> 饭了么
+                </div>
+                
+                <div class="nav-links">
+                    <a href="recipe.html">食谱</a>
+                    <a href="store.html" style="color: var(--primary-color);">商城</a>
+                    <a href="my.html">我的</a>
+                </div>
+                
+                <div class="search-container">
+                    <input type="text" placeholder="搜索新鲜食材...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- 商品区域 -->
+        <div class="section-title">
+            <h2><i class="fas fa-seedling"></i> 新鲜食材</h2>
+        </div>
+        
+        <div class="products-grid">
+            <!-- 商品1 -->
+            <div class="product-card">
+                <div class="product-tag">热卖</div>
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&h=400" alt="新鲜水果">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">水果</div>
+                    <h3 class="product-title">有机苹果 500g</h3>
+                    <p class="product-description">新鲜采摘，自然成熟，无农药残留</p>
+                    <div class="product-price">
+                        <span class="price">¥12.8</span>
+                        <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 商品2 -->
+            <div class="product-card">
+                <div class="product-tag">新品</div>
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&h=400" alt="蔬菜">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">蔬菜</div>
+                    <h3 class="product-title">有机西兰花 350g</h3>
+                    <p class="product-description">当日采摘，冷链配送，保留最佳营养</p>
+                    <div class="product-price">
+                        <span class="price">¥8.5</span>
+                        <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 商品3 -->
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&w=600&h=400" alt="肉类">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">肉类</div>
+                    <h3 class="product-title">精选鸡胸肉 450g</h3>
+                    <p class="product-description">无激素添加，低脂高蛋白，健身首选</p>
+                    <div class="product-price">
+                        <span class="price">¥19.9</span>
+                        <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 商品4 -->
+            <div class="product-card">
+                <div class="product-tag">特惠</div>
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&h=400" alt="海鲜">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">海鲜</div>
+                    <h3 class="product-title">鲜活黑虎虾 150g</h3>
+                    <p class="product-description">深海捕捞，急速冷冻，保持鲜甜口感</p>
+                    <div class="product-price">
+                        <span class="price">¥29.9</span>
+                        <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 商品5 -->
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&h=400" alt="蛋类">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">蛋类</div>
+                    <h3 class="product-title">土鸡蛋 30枚</h3>
+                    <p class="product-description">散养土鸡蛋，蛋黄饱满，营养丰富</p>
+                    <div class="product-price">
+                        <span class="price">¥32.8</span>
+                        <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 商品6 -->
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1594489573454-9a81d3e876b1?auto=format&fit=crop&w=600&h=400" alt="奶制品">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">奶制品</div>
+                    <h3 class="product-title">有机纯牛奶 1L</h3>
+                    <p class="product-description">无添加，高钙高蛋白，家庭装</p>
+                    <div class="product-price">
+                        <span class="price">¥15.9</span>
+                        <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 商品7 -->
+            <div class="product-card">
+                <div class="product-tag">限时</div>
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&h=400" alt="谷物">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">谷物</div>
+                    <h3 class="product-title">有机燕麦片 500g</h3>
+                    <p class="product-description">全谷物，高纤维，健康早餐首选</p>
+                    <div class="product-price">
+                        <span class="price">¥18.8</span>
+                        <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 商品8 -->
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1541692641319-981cc79ee10a?auto=format&fit=crop&w=600&h=400" alt="调味品">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">调味品</div>
+                    <h3 class="product-title">特级初榨橄榄油 500ml</h3>
+                    <p class="product-description">冷压初榨，地中海原装进口</p>
+                    <div class="product-price">
+                        <span class="price">¥68.0</span>
+                        <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>关于我们</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">公司简介</a></li>
+                        <li><a href="#">品牌故事</a></li>
+                        <li><a href="#">团队介绍</a></li>
+                        <li><a href="#">招贤纳士</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>客户服务</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">售后服务</a></li>
+                        <li><a href="#">配送说明</a></li>
+                        <li><a href="#">退换政策</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>商务合作</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">供应商入驻</a></li>
+                        <li><a href="#">广告合作</a></li>
+                        <li><a href="#">渠道合作</a></li>
+                        <li><a href="#">企业采购</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>关注我们</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fab fa-weixin"></i> 微信公众号</a></li>
+                        <li><a href="#"><i class="fab fa-weibo"></i> 新浪微博</a></li>
+                        <li><a href="#"><i class="fab fa-tiktok"></i> 抖音</a></li>
+                        <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2025 饭了么 - 健康食材商城 | 让新鲜食材直达您的厨房</p>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Font Awesome 图标库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+</html>

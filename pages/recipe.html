@@ -86,8 +86,6 @@
         </div>
         
         <div class="recipes-grid" id="recipes-container">
-            <!-- 菜谱卡片将在这里动态生成 -->
-            
             <!-- 示例卡片1 -->
             <div class="recipe-card" data-extra="false">
                 <div class="recipe-image">
@@ -124,7 +122,7 @@
                     </ul>
                     
                     <div class="recipe-actions">
-                        <button>
+                        <button class="view-recipe-btn">
                             <i class="fas fa-book-open"></i> 查看做法
                         </button>
                     </div>
@@ -167,7 +165,7 @@
                     </ul>
                     
                     <div class="recipe-actions">
-                        <button>
+                        <button class="view-recipe-btn">
                             <i class="fas fa-book-open"></i> 查看做法
                         </button>
                     </div>
@@ -211,7 +209,7 @@
                     </ul>
                     
                     <div class="recipe-actions">
-                        <button>
+                        <button class="view-recipe-btn">
                             <i class="fas fa-book-open"></i> 查看做法
                         </button>
                     </div>
@@ -261,7 +259,7 @@
                     </ul>
                     
                     <div class="recipe-actions">
-                        <button>
+                        <button class="view-recipe-btn">
                             <i class="fas fa-book-open"></i> 查看做法
                         </button>
                     </div>
@@ -304,7 +302,7 @@
                     </ul>
                     
                     <div class="recipe-actions">
-                        <button>
+                        <button class="view-recipe-btn">
                             <i class="fas fa-book-open"></i> 查看做法
                         </button>
                     </div>
@@ -347,7 +345,7 @@
                     </ul>
                     
                     <div class="recipe-actions">
-                        <button>
+                        <button class="view-recipe-btn">
                             <i class="fas fa-book-open"></i> 查看做法
                         </button>
                     </div>
@@ -358,6 +356,77 @@
     
     <!-- Font Awesome 图标库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取所有"查看做法"按钮
+            const viewRecipeButtons = document.querySelectorAll('.view-recipe-btn');
+            
+            // 为每个按钮添加点击事件
+            viewRecipeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 获取菜谱卡片中的信息
+                    const recipeCard = this.closest('.recipe-card');
+                    const recipeTitle = recipeCard.querySelector('.recipe-title').textContent;
+                    
+                    // 构建URL参数
+                    const queryParams = new URLSearchParams();
+                    queryParams.append('recipe', encodeURIComponent(recipeTitle));
+                    
+                    // 跳转到菜谱详情页
+                    window.location.href = 'caipu.html?' + queryParams.toString();
+                });
+            });
+            
+            // 重置输入按钮功能
+            const resetButton = document.getElementById('reset-inputs');
+            if (resetButton) {
+                resetButton.addEventListener('click', function() {
+                    const inputs = document.querySelectorAll('.ingredient-box input');
+                    inputs.forEach(input => {
+                        input.value = '';
+                    });
+                });
+            }
+            
+            // 推荐菜谱按钮功能（示例）
+            const findRecipesButton = document.getElementById('find-recipes');
+            if (findRecipesButton) {
+                findRecipesButton.addEventListener('click', function() {
+                    const ingredients = [];
+                    const inputs = document.querySelectorAll('.ingredient-box input');
+                    
+                    inputs.forEach(input => {
+                        if (input.value.trim() !== '') {
+                            ingredients.push(input.value.trim());
+                        }
+                    });
+                    
+                    if (ingredients.length === 0) {
+                        alert('请输入至少一种食材');
+                        return;
+                    }
+                    
+                    // 这里可以添加实际的菜谱推荐逻辑
+                    console.log('搜索食材:', ingredients);
+                    alert('正在为您推荐菜谱...');
+                });
+            }
+            
+            // 过滤菜谱功能
+            const filterCheckbox = document.getElementById('filter-recipes');
+            if (filterCheckbox) {
+                filterCheckbox.addEventListener('change', function() {
+                    const recipeCards = document.querySelectorAll('.recipe-card');
+                    recipeCards.forEach(card => {
+                        if (this.checked && card.dataset.extra === 'true') {
+                            card.style.display = 'none';
+                        } else {
+                            card.style.display = 'block';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,207 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商城 - 新鲜食材</title>
+    <link rel="stylesheet" href="{% static 'fruit/store.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    .modal-bg {
+        display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); justify-content: center; align-items: center;
+    }
+    .modal {
+        background: #fff; border-radius: 10px; padding: 30px 30px 20px 30px; min-width: 300px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        text-align: center;
+    }
+    .modal input[type=number] { width: 60px; padding: 5px; margin: 0 10px; }
+    .modal .modal-btn { margin: 0 10px; padding: 6px 18px; border: none; border-radius: 5px; background: var(--primary-color); color: #fff; cursor: pointer; }
+    .modal .modal-btn.cancel { background: #ccc; color: #333; }
+    
+    /* 悬浮购物车按钮样式 */
+    .floating-cart {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        cursor: pointer;
+        z-index: 99;
+        font-size: 24px;
+        transition: transform 0.3s, background 0.3s;
+    }
+    .floating-cart:hover {
+        transform: scale(1.1);
+        background: #ff5252;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <div class="nav-container">
+                <div class="logo">
+                    <i class="fas fa-carrot"></i> 饭了么
+                </div>
+                <div class="nav-links">
+                    <a href="#">食谱</a>
+                    <a href="#" style="color: var(--primary-color);">商城</a>
+                    <a href="#" id="my-btn"><i class="fas fa-user"></i> 我的</a>
+                </div>
+                <div class="search-container">
+                    <input type="text" placeholder="搜索新鲜食材...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </header>
+        <!-- 商品区域 -->
+        <div class="section-title">
+            <h2><i class="fas fa-seedling"></i> 新鲜食材</h2>
+        </div>
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card">
+                {% if product.tag %}<div class="product-tag">{{ product.tag }}</div>{% endif %}
+                <div class="product-image">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">{{ product.category }}</div>
+                    <h3 class="product-title">{{ product.name }}</h3>
+                    <p class="product-description">{{ product.description }}</p>
+                    <div class="product-price">
+                        <span class="price">¥{{ product.price }}</span>
+                        <button class="add-to-cart" onclick='showAddCartModal({{ product.id }}, "{{ product.name|escapejs }}")'><i class="fas fa-shopping-cart"></i></button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- 弹窗：选择数量 -->
+        <div class="modal-bg" id="addCartModalBg">
+            <div class="modal">
+                <h3 id="modalProductName">加入购物车</h3>
+                <form id="addCartForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" id="modalProductId">
+                    <label>数量：</label>
+                    <input type="number" name="quantity" id="modalQuantity" value="1" min="1">
+                    <div style="margin-top:18px;">
+                        <button type="submit" class="modal-btn">确定</button>
+                        <button type="button" class="modal-btn cancel" onclick="closeAddCartModal()">取消</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- 弹窗：提示 -->
+        <div class="modal-bg" id="tipModalBg">
+            <div class="modal">
+                <h3 id="tipModalText">已加入购物车！</h3>
+                <button class="modal-btn" onclick="closeTipModal()">确定</button>
+            </div>
+        </div>
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>关于我们</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">公司简介</a></li>
+                        <li><a href="#">品牌故事</a></li>
+                        <li><a href="#">团队介绍</a></li>
+                        <li><a href="#">招贤纳士</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>客户服务</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">售后服务</a></li>
+                        <li><a href="#">配送说明</a></li>
+                        <li><a href="#">退换政策</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>商务合作</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">供应商入驻</a></li>
+                        <li><a href="#">广告合作</a></li>
+                        <li><a href="#">渠道合作</a></li>
+                        <li><a href="#">企业采购</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>关注我们</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fab fa-weixin"></i> 微信公众号</a></li>
+                        <li><a href="#"><i class="fab fa-weibo"></i> 新浪微博</a></li>
+                        <li><a href="#"><i class="fab fa-tiktok"></i> 抖音</a></li>
+                        <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 饭了么 - 健康食材商城 | 让新鲜食材直达您的厨房</p>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- 悬浮购物车按钮 -->
+    <a href="/cart/" class="floating-cart" title="查看购物车">
+        <i class="fas fa-shopping-cart"></i>
+    </a>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+    // 弹窗控制
+    function showAddCartModal(id, name) {
+        document.getElementById('modalProductId').value = id;
+        document.getElementById('modalProductName').innerText = '加入购物车 - ' + name;
+        document.getElementById('modalQuantity').value = 1;
+        document.getElementById('addCartModalBg').style.display = 'flex';
+    }
+    function closeAddCartModal() {
+        document.getElementById('addCartModalBg').style.display = 'none';
+    }
+    function showTipModal(text) {
+        document.getElementById('tipModalText').innerText = text;
+        document.getElementById('tipModalBg').style.display = 'flex';
+    }
+    function closeTipModal() {
+        document.getElementById('tipModalBg').style.display = 'none';
+    }
+    // AJAX 提交加入购物车
+    document.getElementById('addCartForm').onsubmit = function(e) {
+        e.preventDefault();
+        var pid = document.getElementById('modalProductId').value;
+        var qty = document.getElementById('modalQuantity').value;
+        var csrf = document.querySelector('#addCartForm [name=csrfmiddlewaretoken]').value;
+        fetch('/add_to_cart/' + pid + '/', {
+            method: 'POST',
+            headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                  'X-CSRFToken': csrf,
+                  'X-Requested-With': 'XMLHttpRequest'
+    },
+            body: 'quantity=' + qty
+        }).then(r => r.json()).then(data => {
+            closeAddCartModal();
+            if(data.success){
+                showTipModal('成功加入购物车！');
+            }else{
+                showTipModal('加入购物车失败');
+            }
+        });
+    };
+    </script>
+</body>
+</html> 

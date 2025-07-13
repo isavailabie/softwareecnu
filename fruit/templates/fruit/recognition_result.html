@@ -1,120 +1,179 @@
 {% extends 'fruit/base_store.html' %}
 
-{% block title %}识别结果 - 生鲜商城{% endblock %}
+{% block title %}识别结果 - 饭了么{% endblock %}
 
-{% block content %}
-<div class="section-title" style="margin-top:40px;">
-    <h2><i class="fas fa-image"></i> 识别结果</h2>
-</div>
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">识别结果</h4>
-                        <a href="{% url 'recognize_fruit' %}" class="btn btn-sm btn-light">
-                            <i class="fas fa-redo mr-1"></i> 重新识别
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="card-body">
-                    {% if error %}
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>
-                            {{ error }}
-                        </div>
-                        <div class="text-center mt-4">
-                            <a href="{% url 'recognize_fruit' %}" class="btn btn-success">
-                                <i class="fas fa-redo mr-2"></i>返回重试
-                            </a>
-                        </div>
-                    {% else %}
-                        {% if results %}
-                            <div class="alert alert-success">
-                                <i class="fas fa-check-circle mr-2"></i>
-                                共检测到 {{ results|length }} 个对象
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <div class="card-header bg-light">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-image mr-2"></i>上传的图片
-                                            </h5>
-                                        </div>
-                                        <div class="card-body text-center">
-                                            <img src="{{ image_url }}" alt="上传的图片" class="img-fluid rounded" style="max-height: 500px;">
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <div class="card h-100">
-                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-list-ul mr-2"></i>检测结果
-                                            </h5>
-                                            <span class="badge bg-primary">{{ results|length }} 项</span>
-                                        </div>
-                                        <div class="card-body p-0">
-                                            <div class="list-group list-group-flush">
-                                                {% for item in results %}
-                                                    <div class="list-group-item">
-                                                        <div class="d-flex w-100 justify-content-between">
-                                                            <h6 class="mb-1">
-                                                                <i class="fas fa-{{ item.object_type|lower }}"></i>
-                                                                {{ item.name }}
-                                                            </h6>
-                                                            <span class="badge bg-success rounded-pill">{{ item.score|floatformat:0 }}%</span>
-                                                        </div>
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-tag"></i> 类型: {{ item.object_type }}<br>
-                                                            <i class="fas fa-map-marker-alt"></i> 位置: {{ item.location }}
-                                                        </small>
-                                                    </div>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% else %}
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-circle mr-2"></i>
-                                未检测到任何对象，请尝试上传其他图片。
-                            </div>
-                            <div class="text-center mt-4">
-                                <a href="{% url 'recognize_fruit' %}" class="btn btn-success">
-                                    <i class="fas fa-redo mr-2"></i>重新识别
-                                </a>
-                            </div>
-                        {% endif %}
-                    {% endif %}
-                </div>
-                
-                <div class="card-footer text-muted text-center">
-                    <a href="{% url 'product_list' %}" class="btn btn-outline-primary">
-                        <i class="fas fa-shopping-basket mr-2"></i>查看商品
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+{% block extra_head %}
 <style>
-    .list-group-item {
+    .result-container {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-top: 40px;
+        margin-bottom: 40px;
+    }
+    
+    .result-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .result-header h1 {
+        font-weight: 700;
+        color: #343a40;
+    }
+    
+    .result-image {
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        max-height: 500px;
+        margin: 0 auto;
+        display: block;
+    }
+    
+    .result-items {
+        margin-top: 30px;
+    }
+    
+    .result-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        border-left: 5px solid #ff7676;
+    }
+    
+    .result-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .result-name {
+        font-size: 24px;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 0;
+    }
+    
+    .result-confidence {
+        display: inline-block;
+        padding: 5px 10px;
+        background-color: #ffe8e8;
+        color: #ff7676;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        margin-left: 10px;
+    }
+    
+    .action-buttons {
+        margin-top: 40px;
+        text-align: center;
+    }
+    
+    .btn-action {
+        padding: 12px 25px;
+        border-radius: 30px;
+        font-weight: 600;
+        margin: 0 10px;
         transition: all 0.3s ease;
     }
-    .list-group-item:hover {
-        background-color: #f8f9fa;
-        transform: translateX(5px);
+    
+    .btn-retry {
+        background: linear-gradient(to right, #ff7676, #ff9f7f);
+        border: none;
+        color: white;
+        box-shadow: 0 4px 10px rgba(255, 118, 118, 0.3);
     }
-    .card {
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    
+    .btn-retry:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(255, 118, 118, 0.4);
+    }
+    
+    .btn-shop {
+        background: white;
+        border: 2px solid #ff7676;
+        color: #ff7676;
+    }
+    
+    .btn-shop:hover {
+        background: #f8f9fa;
+        transform: translateY(-2px);
+    }
+    
+    .empty-result {
+        text-align: center;
+        padding: 40px 0;
+    }
+    
+    .empty-icon {
+        font-size: 64px;
+        color: #6c757d;
+        margin-bottom: 20px;
     }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="container result-container">
+    <div class="result-header">
+        <h1>识别结果</h1>
+        <p class="lead">智能识别您上传的果蔬图片</p>
+    </div>
+    
+    {% if error %}
+        <div class="empty-result">
+            <i class="fas fa-exclamation-circle empty-icon"></i>
+            <h3>识别出错</h3>
+            <p class="text-muted mb-4">{{ error }}</p>
+            <a href="{% url 'recognize_fruit' %}" class="btn btn-retry btn-action">
+                <i class="fas fa-redo me-2"></i>重新识别
+            </a>
+        </div>
+    {% else %}
+        {% if results %}
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="{{ image_url }}" alt="上传的图片" class="img-fluid result-image">
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="result-items">
+                        <h3 class="mb-4">识别到 {{ results|length }} 种果蔬</h3>
+                        
+                        {% for item in results %}
+                            <div class="result-card">
+                                <div class="d-flex align-items-center">
+                                    <h4 class="result-name">{{ item.name }}</h4>
+                                    <span class="result-confidence">{{ item.score|floatformat:0 }}%</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'recognize_fruit' %}" class="btn btn-retry btn-action">
+                    <i class="fas fa-camera me-2"></i>重新识别
+                </a>
+                <a href="{% url 'product_list' %}" class="btn btn-shop btn-action">
+                    <i class="fas fa-shopping-basket me-2"></i>去购买
+                </a>
+            </div>
+        {% else %}
+            <div class="empty-result">
+                <i class="fas fa-search empty-icon"></i>
+                <h3>未检测到果蔬</h3>
+                <p class="text-muted mb-4">请尝试上传包含清晰果蔬的图片</p>
+                <a href="{% url 'recognize_fruit' %}" class="btn btn-retry btn-action">
+                    <i class="fas fa-redo me-2"></i>重新识别
+                </a>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
 {% endblock %}

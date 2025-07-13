@@ -1,0 +1,382 @@
+{% extends 'recipe_base.html' %}
+{% load static %}
+
+{% block title %}智能菜谱推荐 - 饭了么{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'fruit/recipe.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 头部导航 -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-carrot"></i> 饭了么
+            </div>
+            
+            <div class="nav-links">
+                <a href="{% url 'recipe_view' %}" style="color: var(--primary-color);">食谱</a>
+                <a href="{% url 'product_list' %}">商城</a>
+                <a href="{% url 'my_view' %}">我的</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'logout_view' %}"><i class="fas fa-sign-out-alt"></i> 退出</a>
+                {% endif %}
+            </div>
+            
+            <div class="search-container">
+                <input type="text" placeholder="搜索菜谱...">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- 菜谱推荐区域 -->
+    <div class="section-title">
+        <h2><i class="fas fa-utensils"></i> 智能菜谱推荐</h2>
+    </div>
+    
+    <div class="input-section">
+        <div class="input-header">
+            <i class="fas fa-carrot"></i>
+            <h3>我有这些食材...</h3>
+        </div>
+        
+        <p class="input-subtitle">请输入您现有的食材（1-5种），我们将为您推荐合适的菜谱</p>
+        
+        <form id="recipe-form">
+            {% csrf_token %}
+            <div class="ingredient-inputs">
+                <div class="ingredient-box">
+                    <label for="ingredient1">食材 1</label>
+                    <input type="text" id="ingredient1" name="ingredient1" placeholder="例如：鸡蛋">
+                </div>
+                
+                <div class="ingredient-box">
+                    <label for="ingredient2">食材 2</label>
+                    <input type="text" id="ingredient2" name="ingredient2" placeholder="例如：番茄">
+                </div>
+                
+                <div class="ingredient-box">
+                    <label for="ingredient3">食材 3</label>
+                    <input type="text" id="ingredient3" name="ingredient3" placeholder="例如：青椒">
+                </div>
+                
+                <div class="ingredient-box">
+                    <label for="ingredient4">食材 4</label>
+                    <input type="text" id="ingredient4" name="ingredient4" placeholder="例如：洋葱">
+                </div>
+                
+                <div class="ingredient-box">
+                    <label for="ingredient5">食材 5</label>
+                    <input type="text" id="ingredient5" name="ingredient5" placeholder="例如：鸡肉">
+                </div>
+            </div>
+            
+            <div class="actions">
+                <button type="button" class="btn btn-primary" id="find-recipes">
+                    <i class="fas fa-search"></i> 推荐菜谱
+                </button>
+                
+                <button type="button" class="btn btn-outline" id="reset-inputs">
+                    <i class="fas fa-redo"></i> 重新输入
+                </button>
+            </div>
+            
+            <div class="filter-option">
+                <input type="checkbox" id="filter-recipes">
+                <label for="filter-recipes">仅显示无需额外采购的菜谱</label>
+            </div>
+        </form>
+    </div>
+    
+    <div class="recipes-grid" id="recipes-container">
+        <!-- 示例卡片将由JavaScript动态生成 -->
+    </div>
+    
+    <!-- 猜你喜欢区域 -->
+    <div class="section-title">
+        <h2><i class="fas fa-heart"></i> 猜你喜欢</h2>
+    </div>
+
+    <div class="recipes-grid">
+        {% for recipe in popular_recipes %}
+        <div class="recipe-card" data-extra="false">
+            <div class="recipe-image">
+                <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}">
+                <div class="recipe-match">热门</div>
+            </div>
+            
+            <div class="recipe-info">
+                <h3 class="recipe-title">{{ recipe.title }}</h3>
+                
+                <div class="recipe-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ recipe.cooking_time }}分钟</span>
+                    </div>
+                    
+                    <div class="meta-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>{{ recipe.difficulty }}</span>
+                    </div>
+                </div>
+                
+                <div class="ingredients-title">
+                    <i class="fas fa-apple-alt"></i>
+                    <span>所需食材：</span>
+                </div>
+                
+                <ul class="ingredients-list">
+                    {% for ingredient in recipe.recipeingredient_set.all %}
+                    <li>{{ ingredient.ingredient.name }} {{ ingredient.amount }}</li>
+                    {% endfor %}
+                </ul>
+                
+                <div class="recipe-actions">
+                    <a href="{% url 'recipe_detail' recipe.id %}" class="view-recipe-btn">
+                        <i class="fas fa-book-open"></i> 查看做法
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% for recipe in healthy_recipes %}
+        <div class="recipe-card" data-extra="false">
+            <div class="recipe-image">
+                <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}">
+                <div class="recipe-match">健康</div>
+            </div>
+            
+            <div class="recipe-info">
+                <h3 class="recipe-title">{{ recipe.title }}</h3>
+                
+                <div class="recipe-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ recipe.cooking_time }}分钟</span>
+                    </div>
+                    
+                    <div class="meta-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>{{ recipe.difficulty }}</span>
+                    </div>
+                </div>
+                
+                <div class="ingredients-title">
+                    <i class="fas fa-apple-alt"></i>
+                    <span>所需食材：</span>
+                </div>
+                
+                <ul class="ingredients-list">
+                    {% for ingredient in recipe.recipeingredient_set.all %}
+                    <li>{{ ingredient.ingredient.name }} {{ ingredient.amount }}</li>
+                    {% endfor %}
+                </ul>
+                
+                <div class="recipe-actions">
+                    <a href="{% url 'recipe_detail' recipe.id %}" class="view-recipe-btn">
+                        <i class="fas fa-book-open"></i> 查看做法
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 菜谱卡片模板 -->
+<template id="recipe-card-template">
+    <div class="recipe-card">
+        <div class="recipe-image">
+            <img src="" alt="">
+            <div class="recipe-match"></div>
+        </div>
+        
+        <div class="recipe-info">
+            <h3 class="recipe-title"></h3>
+            
+            <div class="recipe-meta">
+                <div class="meta-item">
+                    <i class="fas fa-clock"></i>
+                    <span></span>
+                </div>
+                
+                <div class="meta-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span></span>
+                </div>
+            </div>
+            
+            <div class="ingredients-title">
+                <i class="fas fa-apple-alt"></i>
+                <span>所需食材：</span>
+            </div>
+            
+            <ul class="ingredients-list"></ul>
+            
+            <div class="recipe-actions">
+                <a class="view-recipe-btn">
+                    <i class="fas fa-book-open"></i> 查看做法
+                </a>
+            </div>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取表单和按钮元素
+        const recipeForm = document.getElementById('recipe-form');
+        const findRecipesButton = document.getElementById('find-recipes');
+        const resetButton = document.getElementById('reset-inputs');
+        const filterCheckbox = document.getElementById('filter-recipes');
+        const recipesContainer = document.getElementById('recipes-container');
+        const recipeCardTemplate = document.getElementById('recipe-card-template');
+        
+        // 重置输入按钮功能
+        if (resetButton) {
+            resetButton.addEventListener('click', function() {
+                const inputs = document.querySelectorAll('.ingredient-box input');
+                inputs.forEach(input => {
+                    input.value = '';
+                });
+            });
+        }
+        
+        // 推荐菜谱按钮功能
+        if (findRecipesButton) {
+            findRecipesButton.addEventListener('click', function() {
+                const formData = new FormData(recipeForm);
+                const ingredients = [];
+                
+                // 收集非空食材
+                for (let i = 1; i <= 5; i++) {
+                    const ingredientValue = formData.get(`ingredient${i}`).trim();
+                    if (ingredientValue) {
+                        ingredients.push(ingredientValue);
+                    }
+                }
+                
+                if (ingredients.length === 0) {
+                    alert('请输入至少一种食材');
+                    return;
+                }
+                
+                // 发送AJAX请求获取推荐菜谱
+                fetch('{% url "recommend_recipes" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // 清空容器
+                        recipesContainer.innerHTML = '';
+                        
+                        // 添加菜谱卡片
+                        data.recipes.forEach(recipe => {
+                            const card = createRecipeCard(recipe);
+                            recipesContainer.appendChild(card);
+                        });
+                        
+                        // 应用过滤器
+                        if (filterCheckbox.checked) {
+                            filterRecipes();
+                        }
+                    } else {
+                        alert(data.message || '获取菜谱失败，请稍后再试');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('发生错误，请稍后再试');
+                });
+            });
+        }
+        
+        // 过滤菜谱功能
+        if (filterCheckbox) {
+            filterCheckbox.addEventListener('change', filterRecipes);
+        }
+        
+        // 过滤菜谱函数
+        function filterRecipes() {
+            const recipeCards = document.querySelectorAll('#recipes-container .recipe-card');
+            recipeCards.forEach(card => {
+                if (filterCheckbox.checked && card.dataset.extra === 'true') {
+                    card.style.display = 'none';
+                } else {
+                    card.style.display = 'block';
+                }
+            });
+        }
+        
+        // 创建菜谱卡片函数
+        function createRecipeCard(recipe) {
+            const template = recipeCardTemplate.content.cloneNode(true);
+            const card = template.querySelector('.recipe-card');
+            
+            // 设置数据属性
+            card.dataset.extra = recipe.needs_extra.toString();
+            
+            // 设置图片和标题
+            const img = card.querySelector('.recipe-image img');
+            img.src = recipe.image_url;
+            img.alt = recipe.title;
+            
+            // 设置匹配度
+            const matchDiv = card.querySelector('.recipe-match');
+            matchDiv.textContent = `${recipe.match_percentage}% 匹配`;
+            
+            // 设置标题
+            card.querySelector('.recipe-title').textContent = recipe.title;
+            
+            // 设置烹饪时间和难度
+            const metaItems = card.querySelectorAll('.meta-item span');
+            metaItems[0].textContent = `${recipe.cooking_time}分钟`;
+            metaItems[1].textContent = recipe.difficulty;
+            
+            // 添加食材
+            const ingredientsList = card.querySelector('.ingredients-list');
+            recipe.ingredients.forEach(ingredient => {
+                const li = document.createElement('li');
+                
+                if (ingredient.is_match) {
+                    const span = document.createElement('span');
+                    span.className = 'ingredient-match';
+                    span.textContent = ingredient.name;
+                    li.appendChild(span);
+                    li.appendChild(document.createTextNode(` ${ingredient.amount}`));
+                } else {
+                    if (recipe.needs_extra) {
+                        const span = document.createElement('span');
+                        span.className = 'ingredient-extra';
+                        span.textContent = ingredient.name;
+                        li.appendChild(span);
+                        li.appendChild(document.createTextNode(` ${ingredient.amount}`));
+                    } else {
+                        li.textContent = `${ingredient.name} ${ingredient.amount}`;
+                    }
+                }
+                
+                ingredientsList.appendChild(li);
+            });
+            
+            // 设置详情链接
+            const viewButton = card.querySelector('.view-recipe-btn');
+            viewButton.href = `/recipe/${recipe.id}/`;
+            
+            return card;
+        }
+    });
+</script>
+{% endblock %} 

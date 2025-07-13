@@ -53,9 +53,12 @@
                     <i class="fas fa-carrot"></i> 饭了么
                 </div>
                 <div class="nav-links">
-                    <a href="#">食谱</a>
+                    <a href="/recipe/">食谱</a>
                     <a href="#" style="color: var(--primary-color);">商城</a>
-                    <a href="#" id="my-btn"><i class="fas fa-user"></i> 我的</a>
+                    <a href="/my/" id="my-btn"><i class="fas fa-user"></i> 我的</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'logout_view' %}"><i class="fas fa-sign-out-alt"></i> 退出</a>
+                    {% endif %}
                 </div>
                 <div class="search-container">
                     <input type="text" placeholder="搜索新鲜食材...">

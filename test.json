@@ -1,0 +1,912 @@
+[
+    {
+      "dish_name": "刀豆焖排骨",
+      "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/07/202507071751856530463474389860.jpg?x-oss-process=style/p800",
+      "image_path": "images/刀豆焖排骨.jpg",
+      "ingredients": [
+        {
+          "name": "排骨",
+          "amount": "400g"
+        },
+        {
+          "name": "蒜头",
+          "amount": "2瓣"
+        },
+        {
+          "name": "盐",
+          "amount": "半匙"
+        },
+        {
+          "name": "辣椒粉",
+          "amount": "少许"
+        },
+        {
+          "name": "蚝油",
+          "amount": "1勺"
+        }
+      ],
+      "steps": [
+        "刀豆洗净切段备用。",
+        "排骨洗净用少许生粉、生抽腌制20分钟。",
+        "蒜头切片。",
+        "锅中倒入适量油，下蒜头爆香。",
+        "下排骨翻炒一下。",
+        "再下入刀豆，翻炒一下。",
+        "撒入盐。",
+        "加蚝油。",
+        "撒入辣椒粉，翻炒均匀。",
+        "倒入一碗清水，中小火焖煮20分钟左右即可。"
+      ],
+      "calories": "1170大卡",
+      "nutrition": {
+        "energy": "1170千卡",
+        "protein": "55克",
+        "fat": "80克",
+        "carbohydrates": "10克",
+        "fiber": "3克",
+        "sodium": "2500毫克"
+      },
+      "description": "这道菜将鲜嫩的排骨与清香的刀豆结合，口感丰富，咸香适口，是一道家常下饭菜。",
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "servings": "4人份"
+    },
+    {
+      "dish_name": "清炒香蕉西葫芦丝",
+      "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/06/2025070617517668531329038334261.jpg?x-oss-process=style/p800",
+      "image_path": "images/清炒香蕉西葫芦丝.jpg",
+      "ingredients": [
+        {
+          "name": "香蕉西葫芦",
+          "amount": "3个"
+        },
+        {
+          "name": "蒜蓉",
+          "amount": "适量"
+        },
+        {
+          "name": "食用油",
+          "amount": "适量"
+        },
+        {
+          "name": "料酒",
+          "amount": "适量"
+        },
+        {
+          "name": "盐",
+          "amount": "适量"
+        }
+      ],
+      "steps": [
+        "香蕉西葫芦第一次购买洗净，切去两头。",
+        "擦成丝状。",
+        "锅中放适量食用油烧热，放入香蕉西葫芦丝翻炒。",
+        "加入少许料酒、盐、蒜蓉快速翻炒。",
+        "盛入盘中，颜色美观，清新爽口。"
+      ],
+      "calories": "108大卡",
+      "nutrition": {
+        "energy": "108千卡",
+        "protein": "3.6克",
+        "fat": "1.2克",
+        "carbohydrates": "21克",
+        "fiber": "7.2克"
+      },
+      "description": "以香蕉西葫芦为主料，快速翻炒而成，保留了蔬菜的原汁原味，清新爽口，适合夏季食用。",
+      "cook_time": "15分钟",
+      "difficulty": "简单",
+      "servings": "3人份"
+    },
+    {
+      "dish_name": "香煎沙茶梅花肉",
+      "image_url": "https://i3.meishichina.com/atta/recipe/2025/05/17/2025051717474529829762858010238.JPG?x-oss-process=style/p800",
+      "image_path": "images/香煎沙茶梅花肉.jpg",
+      "ingredients": [
+        {
+          "name": "梅花肉",
+          "amount": "400g"
+        },
+        {
+          "name": "花生油",
+          "amount": "25g"
+        },
+        {
+          "name": "生抽",
+          "amount": "1汤匙"
+        },
+        {
+          "name": "老抽",
+          "amount": "半汤匙"
+        },
+        {
+          "name": "蚝油",
+          "amount": "1汤匙"
+        },
+        {
+          "name": "沙茶粉",
+          "amount": "1小勺"
+        },
+        {
+          "name": "番薯粉",
+          "amount": "1大勺"
+        }
+      ],
+      "steps": [
+        "梅花肉洗净擦干水份。",
+        "加入适量生抽，老抽，蚝油。",
+        "放入沙茶粉。",
+        "揉抓均匀后加入适量花生油再抓匀，腌制1小时左右。",
+        "腌制入味后放入番薯粉，抓拌均匀。",
+        "锅中热油放入梅花肉。",
+        "小火慢煎，煎至两面金黄。",
+        "出锅后晾凉切片即可。",
+        "成品。",
+        "成品。"
+      ],
+      "calories": "1418大卡",
+      "nutrition": {
+        "energy": "1418千卡",
+        "protein": "106克",
+        "fat": "106克",
+        "carbohydrates": "8克",
+        "fiber": "0克",
+        "sodium": "2500毫克"
+      },
+      "description": "外皮焦香、内里鲜嫩的梅花肉搭配浓郁的沙茶风味，令人食欲大开，适合家庭聚餐。",
+      "cook_time": "1小时40分钟（含腌制时间）",
+      "difficulty": "中等",
+      "servings": "4人份"
+    },
+    {
+      "dish_name": "葱烧木耳",
+      "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/05/20250705175168946173726412270318.jpg?x-oss-process=style/p800",
+      "image_path": "images/葱烧木耳.jpg",
+      "ingredients": [
+        {
+          "name": "水发木耳",
+          "amount": "250g"
+        },
+        {
+          "name": "大葱",
+          "amount": "100g"
+        },
+        {
+          "name": "水淀粉",
+          "amount": "10g"
+        },
+        {
+          "name": "菜籽油",
+          "amount": "适量"
+        },
+        {
+          "name": "盐",
+          "amount": "3g"
+        },
+        {
+          "name": "生抽",
+          "amount": "10g"
+        }
+      ],
+      "steps": [
+        "水发木耳备用。",
+        "水发木耳洗净，撕成小朵。",
+        "锅置火上，将泡好的木耳放沸水中焯熟，盛出，沥干，放入盘中。",
+        "大葱备用。",
+        "大葱择洗干净，切丝。",
+        "水淀粉备用。",
+        "另起锅，放油烧热，放入葱丝炒出香味，加入木耳翻炒，加生抽和盐调味，出锅前淋入水淀粉勾芡即可。",
+        "装盘即食。",
+        "葱香浓郁，脆而可口。"
+      ],
+      "calories": "204大卡",
+      "nutrition": {
+        "energy": "204千卡",
+        "protein": "4克",
+        "fat": "11克",
+        "carbohydrates": "22克",
+        "fiber": "7.7克",
+        "sodium": "1923毫克"
+      },
+      "description": "这道菜以水发木耳和大葱为主要食材，营养丰富，葱香浓郁，清爽可口，是健康餐桌上的佳品。",
+      "cook_time": "20分钟",
+      "difficulty": "简单",
+      "servings": "3人份"
+    },
+    {
+      "dish_name": "锅巴土豆",
+      "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/05/20250705175168694203779411350065.jpg?x-oss-process=style/p800",
+      "image_path": "images/锅巴土豆.jpg",
+      "ingredients": [
+        {
+          "name": "小土豆",
+          "amount": "400g"
+        },
+        {
+          "name": "油",
+          "amount": "30g"
+        },
+        {
+          "name": "花椒",
+          "amount": "2g"
+        },
+        {
+          "name": "小茴香",
+          "amount": "1g"
+        },
+        {
+          "name": "盐",
+          "amount": "3g"
+        },
+        {
+          "name": "白芝麻",
+          "amount": "1g"
+        }
+      ],
+      "steps": [
+        "小土豆洗干净，自己家中的，啥颜色的都有。",
+        "上锅蒸，开锅蒸15分钟，为了好剥皮。",
+        "蒸好，晾凉后，剥皮。",
+        "剥皮完成。",
+        "切成大块。",
+        "热油九成热，下锅炸，不要搅动，等定型再搅动。",
+        "炸到金黄色就好啦。",
+        "自制一些花椒盐：有花椒，小茴香（花椒的一半），盐，白芝麻，分别炒一下，碾碎，香气扑鼻。",
+        "花椒盐做好啦。",
+        "撒到炸好的土豆丝，棒棒的，看着就香。"
+      ],
+      "calories": "618大卡",
+      "nutrition": {
+        "energy": "618千卡",
+        "protein": "13克",
+        "fat": "31克",
+        "carbohydrates": "79克",
+        "fiber": "8.5克",
+        "sodium": "1220毫克"
+      },
+      "description": "外酥里嫩的小土豆配上自制的花椒盐，香气扑鼻，是一道受欢迎的小吃或配菜。",
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "servings": "4人份"
+    },
+    {
+      "dish_name": "牛肉馅饼",
+      "image_url": "https://i3.meishichina.com/atta/recipe/2025/06/10/20250610174952174691399113061039.jpg?x-oss-process=style/p800",
+      "image_path": "images/牛肉馅饼.jpg",
+      "ingredients": [
+        {
+          "name": "牛肉馅",
+          "amount": "200g"
+        },
+        {
+          "name": "白萝卜",
+          "amount": "150g"
+        },
+        {
+          "name": "鸡蛋",
+          "amount": "2个"
+        },
+        {
+          "name": "胡椒粉",
+          "amount": "适量"
+        },
+        {
+          "name": "亚麻籽油",
+          "amount": "15g"
+        },
+        {
+          "name": "盐",
+          "amount": "3g"
+        }
+      ],
+      "steps": [
+        "牛肉切成小块在切成片。",
+        "切碎成馅备用。",
+        "白萝卜去皮洗净。",
+        "切成小片。",
+        "放入料理机里绞碎。",
+        "在打入2个鸡蛋一起绞碎。",
+        "倒入大盆里加入胡椒粉，盐。",
+        "搅匀。",
+        "加入奇亚籽油搅匀。",
+        "电饼铛预热后将一勺馅倒入锅里。",
+        "等灯灭了可以反面了。",
+        "成品图。"
+      ],
+      "calories": "680大卡",
+      "nutrition": {
+        "energy": "680千卡",
+        "protein": "45克",
+        "fat": "42克",
+        "carbohydrates": "10克",
+        "fiber": "2.5克",
+        "sodium": "1300毫克"
+      },
+      "description": "以牛肉馅和白萝卜为主要原料制成的馅饼，外皮金黄酥脆，内馅鲜嫩多汁，营养丰富。",
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "servings": "4人份"
+    },
+    {
+      "dish_name": "糖醋里脊",
+      "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/04/20250704175161263768796211350065.jpg?x-oss-process=style/p800",
+      "image_path": "images/糖醋里脊.jpg",
+      "ingredients": [
+        {
+          "name": "猪里脊",
+          "amount": "300g"
+        },
+        {
+          "name": "鸡蛋",
+          "amount": "2个"
+        },
+        {
+          "name": "番茄酱",
+          "amount": "30g"
+        },
+        {
+          "name": "苹果醋",
+          "amount": "20ml"
+        },
+        {
+          "name": "白芝麻",
+          "amount": "5g"
+        }
+      ],
+      "steps": [
+        "两条猪里脊，洗干净后顺丝切成这样的小条。",
+        "加盐白胡椒粉黄酒腌十分钟。",
+        "两个蛋清加一勺淀粉搅拌均匀，我的蛋清没分好，你脑补一下吧。",
+        "倒入肉丝中。",
+        "挑一个面糊一个鸡蛋面粉淀粉1：1。",
+        "加水搅拌成粘稠的糊糊。",
+        "搅拌均匀。",
+        "倒到腌好肉中，搅拌均匀。",
+        "热油八成热，冒烟。",
+        "挑小火，炸到变色，捞出。",
+        "这么多。",
+        "两根里脊，一共这么多。",
+        "调一个糖醋汁：苹果醋，番茄酱，白糖1：1：0.5，如果肉淡，再放点盐。",
+        "搅拌均匀。",
+        "底油，下葱花，调好的糖醋汁翻炒到粘稠。",
+        "倒入里脊，翻炒均匀，撒上白芝麻，出锅。",
+        "原图。",
+        "美图。",
+        "原图。"
+      ],
+      "calories": "790大卡",
+      "nutrition": {
+        "energy": "790千卡",
+        "protein": "40克",
+        "fat": "45克",
+        "carbohydrates": "55克",
+        "fiber": "2克",
+        "sodium": "1500毫克"
+      },
+      "description": "酸甜可口的糖醋里脊，外酥里嫩，是经典的中式菜肴，深受大人小孩的喜爱。",
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "servings": "4人份"
+    },
+    {
+        "dish_name": "南瓜煮粉签",
+        "image_url": "https://i3.meishichina.com/atta/recipe/2025/05/14/2025051417471994519145588010238.JPG?x-oss-process=style/p800",
+        "image_path": "images/南瓜煮粉签.jpg",
+        "ingredients": [
+          {
+            "name": "南瓜",
+            "amount": "300g"
+          },
+          {
+            "name": "牛肉丸",
+            "amount": "100g"
+          },
+          {
+            "name": "瘦肉",
+            "amount": "100g"
+          },
+          {
+            "name": "葱花",
+            "amount": "适量"
+          },
+          {
+            "name": "花生油",
+            "amount": "10g"
+          },
+          {
+            "name": "盐",
+            "amount": "3g"
+          },
+          {
+            "name": "玉米淀粉",
+            "amount": "5g"
+          }
+        ],
+        "steps": [
+          "瘦肉洗净切片，适量玉米淀粉和花生油抓匀备用。",
+          "贝贝南瓜洗净去籽切块。",
+          "牛肉丸备用。",
+          "粉签提前泡发备用。",
+          "锅中热油放入贝贝南瓜翻炒。",
+          "加入适量清水。",
+          "大火煮开至贝贝南瓜七八成熟。",
+          "放入牛肉丸，大火煮开5分钟左右。",
+          "中途把南瓜汤转到了汤锅中，少许盐调味。",
+          "放入粉签。",
+          "加入适量瘦肉。",
+          "大火煮开至断生。",
+          "出锅前放入葱花和蒜头酥即可。",
+          "成品。",
+          "成品。",
+          "成品。"
+        ],
+        "calories": "520大卡",
+        "nutrition": {
+          "energy": "520千卡",
+          "protein": "25克",
+          "fat": "18克",
+          "carbohydrates": "65克",
+          "fiber": "6克",
+          "sodium": "1100毫克"
+        },
+        "description": "以南瓜为主料搭配牛肉丸与粉签，汤汁浓郁，口感丰富，是一道营养丰富的家常汤菜。",
+        "cook_time": "40分钟",
+        "difficulty": "中等",
+        "servings": "4人份"
+      },
+      {
+        "dish_name": "虎皮青椒",
+        "image_url": "https://i3.meishichina.com/atta/recipe/2025/06/16/2025061617500635150951891365842.JPG?x-oss-process=style/p800",
+        "image_path": "images/虎皮青椒.jpg",
+        "ingredients": [
+          {
+            "name": "青椒",
+            "amount": "3个"
+          },
+          {
+            "name": "蒜",
+            "amount": "2瓣"
+          },
+          {
+            "name": "淀粉",
+            "amount": "适量"
+          },
+          {
+            "name": "生抽",
+            "amount": "适量"
+          },
+          {
+            "name": "老抽",
+            "amount": "适量"
+          },
+          {
+            "name": "蚝油",
+            "amount": "适量"
+          },
+          {
+            "name": "白糖",
+            "amount": "适量"
+          },
+          {
+            "name": "醋",
+            "amount": "适量"
+          },
+          {
+            "name": "油",
+            "amount": "适量"
+          }
+        ],
+        "steps": [
+          "青椒去蒂洗干净。",
+          "大蒜切碎。",
+          "将所有调料放进碗里，再加一勺淀粉，少许水搅拌均匀。",
+          "锅里倒油，下入青椒煎。",
+          "两面都煎出虎皮。",
+          "下入蒜末爆香。",
+          "倒入料汁，烧开焖煮一会儿。",
+          "虎皮青椒。"
+        ],
+        "calories": "120大卡",
+        "nutrition": {
+          "energy": "120千卡",
+          "protein": "2克",
+          "fat": "7克",
+          "carbohydrates": "10克",
+          "fiber": "2.5克",
+          "sodium": "800毫克"
+        },
+        "description": "青椒经过煎制后形成漂亮的虎皮，搭配秘制酱汁，鲜香微辣，是一道非常下饭的小炒。",
+        "cook_time": "20分钟",
+        "difficulty": "简单",
+        "servings": "3人份"
+      },
+      {
+        "dish_name": "大葱千张炒肥牛片",
+        "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/02/202507021751440282768304404188.jpg?x-oss-process=style/p800",
+        "image_path": "images/大葱千张炒肥牛片.jpg",
+        "ingredients": [
+          {
+            "name": "肥牛片",
+            "amount": "220克"
+          },
+          {
+            "name": "大葱",
+            "amount": "1根"
+          },
+          {
+            "name": "料酒",
+            "amount": "适量"
+          },
+          {
+            "name": "酱油",
+            "amount": "适量"
+          },
+          {
+            "name": "盐",
+            "amount": "适量"
+          },
+          {
+            "name": "味精",
+            "amount": "适量"
+          }
+        ],
+        "steps": [
+          "食材：厚千张、肥牛片、大葱。",
+          "将大葱去根清洗清洗捞出。",
+          "放在案板上切开。",
+          "将厚千张放在案板上切开。",
+          "用开水泡一下。",
+          "将肥牛片拆开包装，下入清水锅中，加适量的料酒。",
+          "焯开捞出。",
+          "在用清水清洗干净。",
+          "起锅倒油烧热，下入切好的大葱翻炒翻炒至断生。",
+          "接着，合入泡好的厚千张条和肥牛片翻炒翻炒。",
+          "然后，加适量的酱油。",
+          "加适量的盐。",
+          "加适量的味精。",
+          "调味炒匀即可。"
+        ],
+        "calories": "320大卡",
+        "nutrition": {
+          "energy": "320千卡",
+          "protein": "18克",
+          "fat": "22克",
+          "carbohydrates": "12克",
+          "fiber": "1克",
+          "sodium": "1200毫克"
+        },
+        "description": "肥牛搭配千张和大葱，香气扑鼻，咸香适口，是一道适合家庭聚餐的经典炒菜。",
+        "cook_time": "30分钟",
+        "difficulty": "中等",
+        "servings": "4人份"
+      },
+      {
+        "dish_name": "黑木耳茭白炒梅豆",
+        "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/02/202507021751438957081834404188.jpg?x-oss-process=style/p800",
+        "image_path": "images/黑木耳茭白炒梅豆.jpg",
+        "ingredients": [
+          {
+            "name": "梅豆",
+            "amount": "270克"
+          },
+          {
+            "name": "黑木耳",
+            "amount": "10克"
+          },
+          {
+            "name": "茭白",
+            "amount": "2株"
+          },
+          {
+            "name": "酱油",
+            "amount": "适量"
+          },
+          {
+            "name": "盐",
+            "amount": "适量"
+          },
+          {
+            "name": "味精",
+            "amount": "适量"
+          }
+        ],
+        "steps": [
+          "食材：梅豆、黑木耳（已提前泡发）、茭白。",
+          "将泡发的黑木耳清洗清洗捞出。",
+          "将梅豆折成段清洗清洗捞出。",
+          "将茭白剥壳清洗清洗捞出。",
+          "放在案板上切成片。",
+          "将梅豆下入清水锅中焯开4到5分钟。",
+          "接着，合入切好的茭白和黑木耳下入沸水锅中焯上2分钟后捞出。",
+          "起锅倒油烧热，下入焯好的梅豆和茭白、黑木耳翻炒翻炒。",
+          "然后，加适量的酱油。",
+          "加适量的盐。",
+          "加适量的味精。",
+          "调味炒匀即成。"
+        ],
+        "calories": "100大卡",
+        "nutrition": {
+          "energy": "100千卡",
+          "protein": "3克",
+          "fat": "2克",
+          "carbohydrates": "18克",
+          "fiber": "5克",
+          "sodium": "800毫克"
+        },
+        "description": "这道菜选用多种时令蔬菜搭配，清爽可口，低脂健康，是夏日餐桌的理想选择。",
+        "cook_time": "30分钟",
+        "difficulty": "简单",
+        "servings": "3人份"
+      },
+      {
+        "dish_name": "青椒午餐肉炒绿豆芽",
+        "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/02/202507021751435157021220404188.jpg?x-oss-process=style/p800",
+        "image_path": "images/青椒午餐肉炒绿豆芽.jpg",
+        "ingredients": [
+          {
+            "name": "绿豆芽",
+            "amount": "265克"
+          },
+          {
+            "name": "青椒",
+            "amount": "1个"
+          },
+          {
+            "name": "午餐肉",
+            "amount": "4包"
+          },
+          {
+            "name": "盐",
+            "amount": "适量"
+          },
+          {
+            "name": "味精",
+            "amount": "适量"
+          }
+        ],
+        "steps": [
+          "食材：绿豆芽（已清洗）、青椒（已去蒂去籽清洗）、午餐肉。",
+          "将青椒放在案板上切成丝。",
+          "将午餐肉拆开包装放在案板上。",
+          "切开。",
+          "起锅倒入油烧热，下入绿豆芽和切好的青椒翻炒翻炒至断生。",
+          "接着，合入切好的午餐肉翻炒翻炒。",
+          "然后，加适量的盐。",
+          "加适量的味精。",
+          "调味炒匀即成。"
+        ],
+        "calories": "280大卡",
+        "nutrition": {
+          "energy": "280千卡",
+          "protein": "12克",
+          "fat": "18克",
+          "carbohydrates": "15克",
+          "fiber": "2克",
+          "sodium": "1400毫克"
+        },
+        "description": "午餐肉与清脆蔬菜结合，咸香爽口，是一道快速又美味的快手菜。",
+        "cook_time": "20分钟",
+        "difficulty": "简单",
+        "servings": "4人份"
+      },
+      {
+        "dish_name": "苋菜炒干豆皮",
+        "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/02/20250702175141997123590112270318.jpg?x-oss-process=style/p800",
+        "image_path": "images/苋菜炒干豆皮.jpg",
+        "ingredients": [
+          {
+            "name": "苋菜",
+            "amount": "一把"
+          },
+          {
+            "name": "干豆皮",
+            "amount": "一小把"
+          },
+          {
+            "name": "蒜",
+            "amount": "少许"
+          },
+          {
+            "name": "红辣椒",
+            "amount": "几个"
+          },
+          {
+            "name": "菜籽油",
+            "amount": "适量"
+          },
+          {
+            "name": "盐",
+            "amount": "少许"
+          },
+          {
+            "name": "生抽",
+            "amount": "少许"
+          }
+        ],
+        "steps": [
+          "苋菜清洗干净，沥干水分，切好备用。",
+          "干豆皮用温水泡发，泡好后攥干，备用。",
+          "蒜切蒜片和红辣椒备用。",
+          "锅烧热放入适量油，倒入蒜片和红辣椒爆香，再倒入苋菜和豆皮加少许盐和生抽调味，翻炒几下即可。",
+          "出锅装盘即食。",
+          "清淡可口。"
+        ],
+        "calories": "90大卡",
+        "nutrition": {
+          "energy": "90千卡",
+          "protein": "4克",
+          "fat": "3克",
+          "carbohydrates": "12克",
+          "fiber": "3克",
+          "sodium": "700毫克"
+        },
+        "description": "苋菜搭配豆制品，清香爽口，营养均衡，是素食爱好者的好选择。",
+        "cook_time": "20分钟",
+        "difficulty": "简单",
+        "servings": "3人份"
+      },
+      {
+        "dish_name": "黄瓜炒黑椒肠",
+        "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/02/20250702175141569759797312270318.jpg?x-oss-process=style/p800",
+        "image_path": "images/黄瓜炒黑椒肠.jpg",
+        "ingredients": [
+          {
+            "name": "黄瓜",
+            "amount": "两根"
+          },
+          {
+            "name": "黑椒肠",
+            "amount": "两根"
+          },
+          {
+            "name": "蒜",
+            "amount": "少许"
+          },
+          {
+            "name": "菜籽油",
+            "amount": "少许"
+          },
+          {
+            "name": "盐",
+            "amount": "少许"
+          },
+          {
+            "name": "生抽",
+            "amount": "少许"
+          }
+        ],
+        "steps": [
+          "黑椒肠备用。",
+          "斜切薄片。",
+          "黄瓜洗净，削皮，斜切薄片，放入盘中，备用。",
+          "蒜切片，备用。",
+          "锅烧热加少许油，倒入黑椒肠煸炒，再倒入蒜片炒香，继续倒入黄瓜片加少许盐和生抽调味，翻炒几下即可。",
+          "出锅装盘即食。",
+          "美味可口。"
+        ],
+        "calories": "180大卡",
+        "nutrition": {
+          "energy": "180千卡",
+          "protein": "8克",
+          "fat": "12克",
+          "carbohydrates": "10克",
+          "fiber": "2克",
+          "sodium": "900毫克"
+        },
+        "description": "清新黄瓜搭配香浓黑椒肠，酸甜开胃，风味独特，适合夏季食用。",
+        "cook_time": "15分钟",
+        "difficulty": "简单",
+        "servings": "2人份"
+      },
+      {
+        "dish_name": "鸡腿炖时蔬",
+        "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/01/2025070117513559843296208334261.jpg?x-oss-process=style/p800",
+        "image_path": "images/鸡腿炖时蔬.jpg",
+        "ingredients": [
+          {
+            "name": "鸡腿肉",
+            "amount": "3块"
+          },
+          {
+            "name": "胡萝卜",
+            "amount": "1根"
+          },
+          {
+            "name": "山药",
+            "amount": "一段"
+          },
+          {
+            "name": "西兰花",
+            "amount": "几朵"
+          },
+          {
+            "name": "食用油",
+            "amount": "适量"
+          },
+          {
+            "name": "料酒",
+            "amount": "适量"
+          },
+          {
+            "name": "生抽",
+            "amount": "适量"
+          },
+          {
+            "name": "盐",
+            "amount": "适量"
+          },
+          {
+            "name": "鸡精",
+            "amount": "适量"
+          }
+        ],
+        "steps": [
+          "将胡萝卜、山药切滚刀块。",
+          "西兰花洗净待用。",
+          "锅中先下入胡萝卜烧开，再加入山药。",
+          "加入料酒、生抽、盐、放入鸡腿肉（熟的)，加入西兰花（根据食材的先后成熟度放入)，最后加入鸡精即可。"
+        ],
+        "calories": "260大卡",
+        "nutrition": {
+          "energy": "260千卡",
+          "protein": "15克",
+          "fat": "12克",
+          "carbohydrates": "20克",
+          "fiber": "4克",
+          "sodium": "1000毫克"
+        },
+        "description": "鸡肉与时令蔬菜一同炖煮，汤汁鲜美，营养全面，是一道非常适合全家享用的健康菜肴。",
+        "cook_time": "30分钟",
+        "difficulty": "中等",
+        "servings": "4人份"
+      },
+      {
+        "dish_name": "红烧肉炖茄子",
+        "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/01/20250701175135336152014313061039.jpg?x-oss-process=style/p800",
+        "image_path": "images/红烧肉炖茄子.jpg",
+        "ingredients": [
+          {
+            "name": "红烧肉",
+            "amount": "适量"
+          },
+          {
+            "name": "茄子",
+            "amount": "1个"
+          },
+          {
+            "name": "土豆",
+            "amount": "1个"
+          },
+          {
+            "name": "盐",
+            "amount": "少许"
+          },
+          {
+            "name": "胡椒粉",
+            "amount": "少许"
+          }
+        ],
+        "steps": [
+          "土豆去皮洗净。",
+          "一切两半切成宽条。",
+          "在切成小块备用。",
+          "茄子用同法切成小块备用。",
+          "烧肉的锅如开水少许将茄子块及土豆一起放在锅里开小火。",
+          "慢炖至烂加入胡椒粉，盐调味。",
+          "关火出锅。",
+          "成品图。"
+        ],
+        "calories": "350大卡",
+        "nutrition": {
+          "energy": "350千卡",
+          "protein": "12克",
+          "fat": "20克",
+          "carbohydrates": "30克",
+          "fiber": "5克",
+          "sodium": "1100毫克"
+        },
+        "description": "红烧肉的浓郁与茄子、土豆的绵软完美融合，咸香入味，令人食欲大开。",
+        "cook_time": "40分钟",
+        "difficulty": "中等",
+        "servings": "4人份"
+      }
+  ]

@@ -1,0 +1,286 @@
+{% extends 'recipe_base.html' %}
+{% load static %}
+
+{% block title %}{{ recipe.title }} - 饭了么{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'fruit/caipu.css' %}">
+<style>
+    /* 新增的样式 */
+    .ingredient-link {
+        margin-left: 10px;
+        font-size: 12px;
+        color: var(--primary-color);
+        cursor: pointer;
+        text-decoration: underline;
+    }
+    .buy-all-btn {
+        margin-top: 15px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 头部导航 -->
+<header class="header">
+    <div class="nav-container">
+        <a href="{% url 'recipe_view' %}" class="logo">
+            <i class="fas fa-carrot"></i> 饭了么
+        </a>
+        
+        <div class="nav-links">
+            <a href="{% url 'recipe_view' %}" style="color: var(--primary-color);">食谱</a>
+            <a href="{% url 'product_list' %}">商城</a>
+            <a href="{% url 'my_view' %}">我的</a>
+        </div>
+        
+        <button class="back-btn" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i> 返回
+        </button>
+    </div>
+</header>
+
+<!-- 主内容 -->
+<main class="main-content">
+    <!-- 菜谱头部信息 -->
+    <div class="recipe-header">
+        <div class="recipe-image-container">
+            <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" id="recipe-image">
+            <div class="recipe-badge" id="recipe-badge">{{ match_percentage }} 匹配</div>
+        </div>
+        
+        <div class="recipe-info">
+            <h1 class="recipe-title" id="recipe-title">{{ recipe.title }}</h1>
+            <p class="recipe-description" id="recipe-description">
+                {{ recipe.description }}
+            </p>
+            
+            <div class="recipe-meta-grid">
+                <div class="meta-card">
+                    <i class="fas fa-clock"></i>
+                    <div class="meta-label">制作时间</div>
+                    <div class="meta-value" id="cook-time">{{ recipe.cooking_time }}分钟</div>
+                </div>
+                
+                <div class="meta-card">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <div class="meta-label">难度等级</div>
+                    <div class="meta-value" id="difficulty">{{ recipe.difficulty }}</div>
+                </div>
+                
+                <div class="meta-card">
+                    <i class="fas fa-users"></i>
+                    <div class="meta-label">适合人数</div>
+                    <div class="meta-value" id="servings">{{ recipe.servings }}</div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="start-cooking">
+                    <i class="fas fa-play"></i> 开始制作
+                </button>
+                <button class="btn btn-outline" id="favorite-btn">
+                    <i class="fas fa-heart"></i> 收藏
+                </button>
+                <button class="btn btn-secondary" id="share-btn">
+                    <i class="fas fa-share"></i> 分享
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 食材和营养信息 -->
+    <div class="content-grid">
+        <div class="content-card">
+            <h3><i class="fas fa-apple-alt"></i> 所需食材</h3>
+            <ul class="ingredients-list" id="ingredients-list">
+                {% for item in ingredients %}
+                <li>
+                    <span class="ingredient-name">{{ item.ingredient.name }}</span>
+                    <span class="ingredient-amount">{{ item.amount }}</span>
+                    <span class="ingredient-link" onclick="goToMall('{{ item.ingredient.name }}')">去购买</span>
+                </li>
+                {% endfor %}
+            </ul>
+            <button class="btn btn-primary buy-all-btn" onclick="buyAllIngredients()">
+                <i class="fas fa-shopping-cart"></i> 一键购买所有食材
+            </button>
+        </div>
+        
+        <div class="content-card">
+            <h3><i class="fas fa-chart-bar"></i> 营养信息</h3>
+            <div class="nutrition-grid">
+                {% for item in nutrition %}
+                <div class="nutrition-item">
+                    <div class="nutrition-value">{{ item.value }}</div>
+                    <div class="nutrition-label">{{ item.label }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 制作步骤 -->
+    <div class="steps-section">
+        <h3><i class="fas fa-list-ol"></i> 制作步骤</h3>
+        <ol class="steps-list">
+            {% for step in steps %}
+            <li class="step-item">
+                <div class="step-number">{{ step.number }}</div>
+                <div class="step-content">
+                    <h4 class="step-title">{{ step.title }}</h4>
+                    <p class="step-description">
+                        {{ step.description }}
+                    </p>
+                    {% if step.tip %}
+                    <div class="step-tip">
+                        <i class="fas fa-lightbulb"></i>
+                        <strong>小贴士：</strong> {{ step.tip }}
+                    </div>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
+
+    <!-- 制作小贴士 -->
+    <div class="tips-section">
+        <h3><i class="fas fa-lightbulb"></i> 制作小贴士</h3>
+        <div class="tips-grid">
+            {% for tip in tips %}
+            <div class="tip-card">
+                <h4>{{ tip.title }}</h4>
+                <p>{{ tip.content }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 评价区域 -->
+    <div class="rating-section">
+        <div class="rating-header">
+            <h3><i class="fas fa-star"></i> 用户评价</h3>
+            <div class="rating-stats">
+                <div class="rating-score">4.8</div>
+                <div class="rating-stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="rating-count">基于 1,234 个评价</div>
+            </div>
+        </div>
+        
+        <div class="rating-form">
+            <h4>为这道菜打分</h4>
+            <div class="star-rating" id="star-rating">
+                <i class="fas fa-star" data-rating="1"></i>
+                <i class="fas fa-star" data-rating="2"></i>
+                <i class="fas fa-star" data-rating="3"></i>
+                <i class="fas fa-star" data-rating="4"></i>
+                <i class="fas fa-star" data-rating="5"></i>
+            </div>
+            <textarea placeholder="分享你的制作心得或改进建议..." id="review-text"></textarea>
+            <button class="btn btn-primary" id="submit-review">
+                <i class="fas fa-paper-plane"></i> 提交评价
+            </button>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 返回按钮功能
+    function goBack() {
+        window.history.back();
+    }
+
+    // 跳转到商城页面
+    function goToMall(ingredient) {
+        alert(`即将跳转到商城购买: ${ingredient}`);
+        // 实际应用中这里应该跳转到商城页面，并携带食材参数
+        window.location.href = "{% url 'product_list' %}?search=" + encodeURIComponent(ingredient);
+    }
+
+    // 一键购买所有食材
+    function buyAllIngredients() {
+        const ingredients = [
+            {% for item in ingredients %}
+            "{{ item.ingredient.name }}",
+            {% endfor %}
+        ];
+        alert(`即将跳转到商城购买所有食材: ${ingredients.join(', ')}`);
+        // 实际应用中这里应该跳转到商城页面，并携带所有食材参数
+        window.location.href = "{% url 'product_list' %}?ingredients=" + encodeURIComponent(JSON.stringify(ingredients));
+    }
+
+    // 收藏按钮功能
+    const favoriteBtn = document.getElementById('favorite-btn');
+    favoriteBtn.addEventListener('click', function() {
+        this.classList.toggle('active');
+        if (this.classList.contains('active')) {
+            this.innerHTML = '<i class="fas fa-heart"></i> 已收藏';
+            this.classList.remove('btn-outline');
+            this.classList.add('btn-primary');
+        } else {
+            this.innerHTML = '<i class="fas fa-heart"></i> 收藏';
+            this.classList.remove('btn-primary');
+            this.classList.add('btn-outline');
+        }
+    });
+
+    // 评分功能
+    const stars = document.querySelectorAll('.star-rating i');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.getAttribute('data-rating'));
+            stars.forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        });
+    });
+
+    // 提交评价功能
+    const submitReview = document.getElementById('submit-review');
+    submitReview.addEventListener('click', function() {
+        const reviewText = document.getElementById('review-text').value;
+        const activeStars = document.querySelectorAll('.star-rating i.active').length;
+        
+        if (activeStars === 0) {
+            alert('请先评分！');
+            return;
+        }
+        
+        if (reviewText.trim() === '') {
+            alert('请输入评价内容！');
+            return;
+        }
+        
+        alert(`感谢您的评价！您给了${activeStars}星评价。`);
+        document.getElementById('review-text').value = '';
+        stars.forEach(star => star.classList.remove('active'));
+    });
+
+    // 开始制作功能
+    const startCooking = document.getElementById('start-cooking');
+    startCooking.addEventListener('click', function() {
+        alert('开始制作{{ recipe.title }}！祝您烹饪愉快！');
+    });
+
+    // 分享功能
+    const shareBtn = document.getElementById('share-btn');
+    shareBtn.addEventListener('click', function() {
+        alert('已复制菜谱链接到剪贴板，可以分享给朋友了！');
+        // 实际应用中这里应该使用Web Share API或复制到剪贴板
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,571 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人健康档案 - 饭了么</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'fruit/my.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <div class="nav-container">
+                <div class="logo">
+                    <i class="fas fa-carrot"></i> 饭了么
+                </div>
+                
+                <div class="nav-links">
+                    <a href="/recipe/">食谱</a>
+                    <a href="/">商城</a>
+                    <a href="#" style="color: var(--primary-color);">我的</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'logout_view' %}"><i class="fas fa-sign-out-alt"></i> 退出</a>
+                    {% endif %}
+                </div>
+                
+                <div class="search-container">
+                    <input type="text" placeholder="搜索健康食谱...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- 个人资料区域 -->
+        <div class="profile-section">
+            <div class="avatar-container">
+                <img src="{% static 'fruit/images/user-avatar.jpg' %}" alt="用户头像">
+            </div>
+            
+            <div class="user-info">
+                <h1 class="welcome-text" id="username-display">您好，亲爱的{{ user.username }}</h1>
+                <p>欢迎查看您的健康档案，今日减脂计划已准备就绪！</p>
+                
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">14</div>
+                        <div class="stat-label">减脂天数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">3.6kg</div>
+                        <div class="stat-label">已减体重</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">87%</div>
+                        <div class="stat-label">计划完成度</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 新增：热量记录表单 -->
+        <div class="calorie-form-container">
+            <div class="form-title">
+                <i class="fas fa-utensils"></i>
+                <h3>记录今日热量摄入</h3>
+            </div>
+            
+            <form id="calorieForm" class="calorie-form">
+                <!-- 早餐部分 -->
+                <div class="meal-section">
+                    <div class="meal-header">
+                        <i class="fas fa-sun"></i>
+                        <h4>早餐</h4>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="breakfast-food">食物名称</label>
+                        <input type="text" id="breakfast-food" class="form-control" placeholder="例如：全麦面包 + 牛奶">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="breakfast-calories">热量（千卡）</label>
+                        <input type="number" id="breakfast-calories" class="form-control" placeholder="输入热量值">
+                    </div>
+                    
+                    <div class="meal-total" id="breakfast-total">早餐总计: 0 千卡</div>
+                </div>
+                
+                <!-- 午餐部分 -->
+                <div class="meal-section">
+                    <div class="meal-header">
+                        <i class="fas fa-cloud-sun"></i>
+                        <h4>午餐</h4>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lunch-food">食物名称</label>
+                        <input type="text" id="lunch-food" class="form-control" placeholder="例如：番茄鸡胸肉">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lunch-calories">热量（千卡）</label>
+                        <input type="number" id="lunch-calories" class="form-control" placeholder="输入热量值">
+                    </div>
+                    
+                    <div class="meal-total" id="lunch-total">午餐总计: 0 千卡</div>
+                </div>
+                
+                <!-- 晚餐部分 -->
+                <div class="meal-section">
+                    <div class="meal-header">
+                        <i class="fas fa-moon"></i>
+                        <h4>晚餐</h4>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dinner-food">食物名称</label>
+                        <input type="text" id="dinner-food" class="form-control" placeholder="例如：蔬菜沙拉">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dinner-calories">热量（千卡）</label>
+                        <input type="number" id="dinner-calories" class="form-control" placeholder="输入热量值">
+                    </div>
+                    
+                    <div class="meal-total" id="dinner-total">晚餐总计: 0 千卡</div>
+                </div>
+            </form>
+            
+            <div class="daily-total">
+                今日总摄入: <span id="daily-total-calories">0</span> 千卡
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" id="reset-form">
+                    <i class="fas fa-redo"></i> 重置
+                </button>
+                <button type="button" class="btn btn-primary" id="save-calories">
+                    <i class="fas fa-save"></i> 保存记录
+                </button>
+            </div>
+        </div>
+        
+        <!-- 热量卡片 -->
+        <div class="calorie-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-fire"></i> 今日能量摄入统计</h2>
+                <div class="card-date">2025年7月10日</div>
+            </div>
+            
+            <div class="calorie-content">
+                <div class="calorie-goal">
+                    <h3>每日热量目标：<strong>1500 千卡</strong></h3>
+                    <div class="goal-progress">
+                        <div class="progress-bar" style="width: 54%"></div>
+                        <div class="progress-text">810/1500 千卡</div>
+                    </div>
+                    
+                    <div class="calorie-details">
+                        <div class="detail-item">
+                            <div class="detail-value">810</div>
+                            <div class="detail-label">已摄入</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-value remaining">690</div>
+                            <div class="detail-label">剩余可摄入</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-value">54%</div>
+                            <div class="detail-label">完成度</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="calorie-recommend">
+                    <h3 class="recommend-title"><i class="fas fa-lightbulb"></i> 晚餐建议</h3>
+                    <ul class="recommend-list">
+                        <li>选择热量≤500千卡的菜品</li>
+                        <li>推荐：蔬菜沙拉配鸡胸肉（约350千卡）</li>
+                        <li>可选：番茄鸡蛋汤（约200千卡）</li>
+                        <li>避免：油炸食品、高糖食物</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 图表区域 -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h2 class="card-title"><i class="fas fa-chart-line"></i> 周度热量趋势</h2>
+                <div class="chart-actions">
+                    <button class="time-btn active" data-period="week">本周</button>
+                    <button class="time-btn" data-period="last-week">上周</button>
+                    <button class="time-btn" data-period="month">本月</button>
+                </div>
+            </div>
+            
+            <div class="chart-wrapper">
+                <canvas id="calorie-chart"></canvas>
+                <div class="chart-loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i> 加载中...
+                </div>
+            </div>
+        </div>
+        
+        <!-- 新增：历史记录区域 -->
+        <div class="history-container">
+            <div class="history-header">
+                <h3 class="history-title"><i class="fas fa-history"></i> 历史记录</h3>
+                <div>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-calendar-alt"></i> 选择日期
+                    </button>
+                </div>
+            </div>
+            
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>早餐</th>
+                        <th>午餐</th>
+                        <th>晚餐</th>
+                        <th>总热量</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>7月10日</td>
+                        <td>全麦面包+牛奶 (355千卡)</td>
+                        <td>番茄鸡胸肉 (450千卡)</td>
+                        <td>-</td>
+                        <td>805千卡</td>
+                        <td class="status-cell">
+                            <div class="status-badge status-good"></div>
+                            <span>达标</span>
+                        </td>
+                        <td>
+                            <button class="edit-btn">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>7月9日</td>
+                        <td>燕麦粥 (280千卡)</td>
+                        <td>鸡胸肉沙拉 (420千卡)</td>
+                        <td>蔬菜汤 (180千卡)</td>
+                        <td>880千卡</td>
+                        <td class="status-cell">
+                            <div class="status-badge status-good"></div>
+                            <span>达标</span>
+                        </td>
+                        <td>
+                            <button class="edit-btn">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>7月8日</td>
+                        <td>鸡蛋三明治 (320千卡)</td>
+                        <td>牛肉饭 (650千卡)</td>
+                        <td>水果沙拉 (120千卡)</td>
+                        <td>1090千卡</td>
+                        <td class="status-cell">
+                            <div class="status-badge status-warning"></div>
+                            <span>接近上限</span>
+                        </td>
+                        <td>
+                            <button class="edit-btn">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>7月7日</td>
+                        <td>煎饼果子 (480千卡)</td>
+                        <td>炸鸡套餐 (850千卡)</td>
+                        <td>冰淇淋 (350千卡)</td>
+                        <td>1680千卡</td>
+                        <td class="status-cell">
+                            <div class="status-badge status-exceed"></div>
+                            <span>已超标</span>
+                        </td>
+                        <td>
+                            <button class="edit-btn">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>关于我们</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">公司简介</a></li>
+                        <li><a href="#">品牌故事</a></li>
+                        <li><a href="#">团队介绍</a></li>
+                        <li><a href="#">招贤纳士</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>客户服务</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">售后服务</a></li>
+                        <li><a href="#">配送说明</a></li>
+                        <li><a href="#">退换政策</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>商务合作</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">供应商入驻</a></li>
+                        <li><a href="#">广告合作</a></li>
+                        <li><a href="#">渠道合作</a></li>
+                        <li><a href="#">企业采购</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>关注我们</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fab fa-weixin"></i> 微信公众号</a></li>
+                        <li><a href="#"><i class="fab fa-weibo"></i> 新浪微博</a></li>
+                        <li><a href="#"><i class="fab fa-tiktok"></i> 抖音</a></li>
+                        <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2025 饭了么 - 健康食材商城 | 让新鲜食材直达您的厨房</p>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- 悬浮购物车按钮 -->
+    <a href="/cart/" class="floating-cart" title="查看购物车">
+        <i class="fas fa-shopping-cart"></i>
+    </a>
+    
+    <!-- Font Awesome 图标库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    
+    <script>
+        // 新增：热量记录功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取表单元素
+            const breakfastCalories = document.getElementById('breakfast-calories');
+            const lunchCalories = document.getElementById('lunch-calories');
+            const dinnerCalories = document.getElementById('dinner-calories');
+            const dailyTotal = document.getElementById('daily-total-calories');
+            const saveButton = document.getElementById('save-calories');
+            const resetButton = document.getElementById('reset-form');
+            
+            // 初始化总热量
+            updateTotalCalories();
+            
+            // 为每个热量输入框添加事件监听器
+            breakfastCalories.addEventListener('input', updateTotalCalories);
+            lunchCalories.addEventListener('input', updateTotalCalories);
+            dinnerCalories.addEventListener('input', updateTotalCalories);
+            
+            // 保存按钮事件
+            saveButton.addEventListener('click', function() {
+                const breakfast = parseInt(breakfastCalories.value) || 0;
+                const lunch = parseInt(lunchCalories.value) || 0;
+                const dinner = parseInt(dinnerCalories.value) || 0;
+                const total = breakfast + lunch + dinner;
+                
+                // 计算剩余热量
+                const target = 1500;
+                const remaining = target - total;
+                
+                // 更新卡片显示
+                document.querySelector('.progress-bar').style.width = `${(total / target) * 100}%`;
+                document.querySelector('.progress-text').textContent = `${total}/${target} 千卡`;
+                document.querySelector('.detail-value').textContent = total;
+                document.querySelector('.detail-value.remaining').textContent = Math.max(remaining, 0);
+                document.querySelector('.detail-value:nth-child(3)').textContent = `${Math.round((total / target) * 100)}%`;
+                
+                // 更新建议
+                const recommendList = document.querySelector('.recommend-list');
+                if (remaining > 0) {
+                    recommendList.innerHTML = `
+                        <li>今日剩余可摄入 <strong>${remaining}</strong> 千卡</li>
+                        <li>晚餐推荐选择热量≤${Math.min(remaining, 500)}千卡的菜品</li>
+                        <li>推荐：蔬菜沙拉配鸡胸肉（约350千卡）</li>
+                        <li>可选：番茄鸡蛋汤（约200千卡）</li>
+                        <li>避免：油炸食品、高糖食物</li>
+                    `;
+                } else {
+                    recommendList.innerHTML = `
+                        <li class="exceeded">今日已超标 <strong>${Math.abs(remaining)}</strong> 千卡</li>
+                        <li>建议增加运动消耗多余热量</li>
+                        <li>晚餐推荐低热量食物：蔬菜汤（约150千卡）</li>
+                        <li>明天注意控制热量摄入</li>
+                    `;
+                }
+                
+                // 显示成功消息
+                alert('热量记录已保存！');
+            });
+            
+            // 重置按钮事件
+            resetButton.addEventListener('click', function() {
+                document.getElementById('breakfast-food').value = '';
+                document.getElementById('breakfast-calories').value = '';
+                document.getElementById('lunch-food').value = '';
+                document.getElementById('lunch-calories').value = '';
+                document.getElementById('dinner-food').value = '';
+                document.getElementById('dinner-calories').value = '';
+                updateTotalCalories();
+            });
+            
+            // 更新总热量函数
+            function updateTotalCalories() {
+                const breakfast = parseInt(breakfastCalories.value) || 0;
+                const lunch = parseInt(lunchCalories.value) || 0;
+                const dinner = parseInt(dinnerCalories.value) || 0;
+                const total = breakfast + lunch + dinner;
+                
+                // 更新显示
+                document.getElementById('breakfast-total').textContent = `早餐总计: ${breakfast} 千卡`;
+                document.getElementById('lunch-total').textContent = `午餐总计: ${lunch} 千卡`;
+                document.getElementById('dinner-total').textContent = `晚餐总计: ${dinner} 千卡`;
+                dailyTotal.textContent = total;
+            }
+        });
+        
+        // 图表数据
+        const chartData = {
+            'week': {
+                labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                data: [1420, 1580, 1360, 1510, 1480, 1620, 1450]
+            },
+            'last-week': {
+                labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                data: [1380, 1520, 1470, 1430, 1560, 1490, 1410]
+            },
+            'month': {
+                labels: ['第1周', '第2周', '第3周', '第4周'],
+                data: [10200, 10500, 9800, 10700]
+            }
+        };
+
+        let calorieChart = null;
+
+        // 初始化热量图表
+        function initCalorieChart(period = 'week') {
+            const ctx = document.getElementById('calorie-chart').getContext('2d');
+            const data = chartData[period];
+            
+            if (calorieChart) {
+                calorieChart.destroy();
+            }
+            
+            calorieChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: '目标热量',
+                            data: data.labels.map(() => 1500),
+                            backgroundColor: 'rgba(78, 205, 196, 0.2)',
+                            borderColor: 'rgba(78, 205, 196, 1)',
+                            borderWidth: 1,
+                            type: 'line',
+                            fill: false,
+                            pointRadius: 4,
+                            pointBackgroundColor: 'rgba(78, 205, 196, 1)'
+                        },
+                        {
+                            label: '实际摄入',
+                            data: data.data,
+                            backgroundColor: data.data.map(value => 
+                                value > 1500 ? 'rgba(231, 76, 60, 0.7)' : 'rgba(46, 204, 113, 0.7)'),
+                            borderColor: data.data.map(value => 
+                                value > 1500 ? 'rgba(231, 76, 60, 1)' : 'rgba(46, 204, 113, 1)'),
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: Math.min(...data.data) - 200,
+                            max: Math.max(...data.data) + 200,
+                            title: {
+                                display: true,
+                                text: '热量 (千卡)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} 千卡`;
+                                },
+                                afterLabel: function(context) {
+                                    if (context.datasetIndex === 1) {
+                                        const target = 1500;
+                                        const diff = context.raw - target;
+                                        if (diff > 0) {
+                                            return `超量: +${diff} 千卡`;
+                                        } else if (diff < 0) {
+                                            return `剩余: ${-diff} 千卡`;
+                                        }
+                                        return '刚好达标';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 设置用户名
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化图表
+            initCalorieChart();
+            
+            // 时间按钮切换
+            const timeBtns = document.querySelectorAll('.time-btn');
+            
+            timeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 切换按钮状态
+                    timeBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 立即更新图表
+                    const period = this.dataset.period;
+                    initCalorieChart(period);
+                });
+            });
+            
+            // 编辑按钮事件
+            const editBtns = document.querySelectorAll('.edit-btn');
+            editBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    alert('编辑功能：这里可以修改历史记录数据');
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -379,11 +379,10 @@ def process_image(image_path):
                 score = obj.get("score", 0)  # 使用检测的置信度
             
             if name:
+                # 简化结果，只保留名称和置信度
                 results.append({
                     'name': name,
-                    'score': round(score * 100, 2) if score <= 1 else round(score, 2),
-                    'location': f"({int(left)}, {int(top)}, {int(width)}, {int(height)})",
-                    'object_type': obj.get("name", "unknown")  # 添加对象类型信息
+                    'score': round(score * 100, 2) if score <= 1 else round(score, 2)
                 })
     except Exception as e:
         results.append({"error": f"处理过程中发生错误: {str(e)}"})

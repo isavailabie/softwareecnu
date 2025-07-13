@@ -202,47 +202,47 @@ def recommend_recipes(request):
         if not ingredients:
             return JsonResponse({'success': False, 'message': '请至少输入一种食材'})
         
-        # 查找包含这些食材的菜谱
+        # 1. 先通过关系查询出至少包含其中一个食材的菜谱（去重）
+        candidate_recipes = Recipe.objects.filter(ingredients__name__in=ingredients).distinct()
+
         matching_recipes = []
-        all_recipes = Recipe.objects.all()
-        
-        for recipe in all_recipes:
-            recipe_ingredients = RecipeIngredient.objects.filter(recipe=recipe)
-            recipe_ingredient_names = [ri.ingredient.name for ri in recipe_ingredients]
-            
-            # 计算匹配度
+
+        for recipe in candidate_recipes:
+            # 当前菜谱的全部食材记录
+            recipe_ingredients_qs = RecipeIngredient.objects.filter(recipe=recipe).select_related('ingredient')
+            recipe_ingredient_names = [ri.ingredient.name for ri in recipe_ingredients_qs]
+
+            # 匹配度 = 输入食材与菜谱食材交集 / 菜谱总食材
             matched_ingredients = set(ingredients) & set(recipe_ingredient_names)
+            if not matched_ingredients:
+                continue  # 理论不会发生，但保险
+
             match_percentage = len(matched_ingredients) / len(recipe_ingredient_names) * 100
-            
-            # 检查是否需要额外食材
             needs_extra = len(matched_ingredients) < len(recipe_ingredient_names)
-            
-            if matched_ingredients:  # 至少匹配一种食材
-                recipe_data = {
-                    'id': recipe.id,
-                    'title': recipe.title,
-                    'cooking_time': recipe.cooking_time,
-                    'difficulty': recipe.difficulty,
-                    'image_url': recipe.image_url,
-                    'match_percentage': int(match_percentage),
-                    'needs_extra': needs_extra,
-                    'ingredients': []
-                }
-                
-                # 添加食材信息
-                for ri in recipe_ingredients:
-                    ingredient_data = {
-                        'name': ri.ingredient.name,
-                        'amount': ri.amount,
-                        'is_match': ri.ingredient.name in matched_ingredients
-                    }
-                    recipe_data['ingredients'].append(ingredient_data)
-                
-                matching_recipes.append(recipe_data)
-        
-        # 按匹配度排序
-        matching_recipes.sort(key=lambda x: x['match_percentage'], reverse=True)
-        
+
+            recipe_data = {
+                'id': recipe.id,
+                'title': recipe.title,
+                'cooking_time': recipe.cooking_time,
+                'difficulty': recipe.difficulty,
+                'image_url': recipe.image_url,
+                'match_percentage': int(match_percentage),
+                'needs_extra': needs_extra,
+                'ingredients': []
+            }
+
+            for ri in recipe_ingredients_qs:
+                recipe_data['ingredients'].append({
+                    'name': ri.ingredient.name,
+                    'amount': ri.amount,
+                    'is_match': ri.ingredient.name in matched_ingredients
+                })
+
+            matching_recipes.append(recipe_data)
+
+        # 按匹配度和烹饪时间排序（示例）
+        matching_recipes.sort(key=lambda x: (-x['match_percentage'], x['cooking_time']))
+
         return JsonResponse({'success': True, 'recipes': matching_recipes})
     
     return JsonResponse({'success': False, 'message': '请求方法不正确'})

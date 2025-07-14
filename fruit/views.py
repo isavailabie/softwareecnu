@@ -403,7 +403,6 @@ def recognize_fruit(request):
 
 def process_image(image_path):
     """Process the image and return recognition results"""
-    # 百度AI API配置
     MULTI_OBJECT_API = "https://aip.baidubce.com/rest/2.0/image-classify/v1/multi_object_detect"
     INGREDIENT_API = "https://aip.baidubce.com/rest/2.0/image-classify/v1/classify/ingredient"
     ACCESS_TOKEN = "24.80c4f636eb0fe0a74777316cf62ecf31.2592000.1754933089.282335-119491175"

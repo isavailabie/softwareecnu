@@ -64,3 +64,39 @@ class RecipeIngredient(models.Model):
     
     def __str__(self):
         return f"{self.recipe.title} - {self.ingredient.name} ({self.amount})"
+
+
+class FavoriteIngredient(models.Model):
+    """用户收藏的食材"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_ingredients')
+    name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'name')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.name}"
+
+
+class FridgeItem(models.Model):
+    """用户冰箱中的实际食材，可来源于识别结果 / 购物车 / 手动添加"""
+    SOURCE_CHOICES = [
+        ('recognized', '识别'),
+        ('cart', '购物车'),
+        ('manual', '手动'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fridge_items')
+    name = models.CharField(max_length=100)
+    quantity = models.IntegerField(default=1)
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default='recognized')
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'name', 'source')
+        ordering = ['-added_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.name} ({self.quantity})"

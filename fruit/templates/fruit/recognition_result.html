@@ -146,9 +146,15 @@
                         
                         {% for item in results %}
                             <div class="result-card">
-                                <div class="d-flex align-items-center">
-                                    <h4 class="result-name">{{ item.name }}</h4>
-                                    <span class="result-confidence">{{ item.score|floatformat:0 }}%</span>
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <div class="flex-grow-1">
+                                        <input type="text" class="form-control form-control-sm ingredient-name" value="{{ item.name }}">
+                                        <small class="text-muted">置信度 {{ item.score|floatformat:0 }}%</small>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <input type="number" class="form-control form-control-sm ingredient-qty" min="1" value="1" style="width:70px;">
+                                        <button type="button" class="btn btn-success btn-sm add-fridge-btn"><i class="fas fa-plus"></i> 加入冰箱</button>
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}
@@ -176,4 +182,45 @@
         {% endif %}
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrfToken = '{{ csrf_token }}';
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.add-fridge-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const card = this.closest('.result-card');
+      const name = card.querySelector('.ingredient-name').value.trim();
+      const qty = card.querySelector('.ingredient-qty').value || 1;
+      if (!name) {
+        alert('食材名称不能为空');
+        return;
+      }
+      fetch('{% url "add_to_fridge" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: `name=${encodeURIComponent(name)}&quantity=${qty}&source=recognized`
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            this.innerHTML = '<i class="fas fa-check"></i> 已加入';
+            this.classList.remove('btn-success');
+            this.classList.add('btn-secondary');
+            this.disabled = true;
+          } else {
+            alert(data.error || '加入失败，请重试');
+          }
+        })
+        .catch(() => alert('网络错误，请稍后再试'));
+    });
+  });
+});
+</script>
 {% endblock %}

@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import CartItem, Recipe, Ingredient, RecipeIngredient
+from .models import CartItem, Recipe, Ingredient, RecipeIngredient, FavoriteIngredient, FridgeItem
 
 import os
 import base64
@@ -168,6 +168,66 @@ def remove_from_cart(request, product_id):
     return redirect('cart_view')
 
 # 我的页面
+@login_required
+def toggle_favorite_ingredient(request):
+    """收藏 / 取消收藏食材 (AJAX POST)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '请求方法错误'})
+
+    name = request.POST.get('name', '').strip()
+    if not name:
+        return JsonResponse({'success': False, 'error': '名称不能为空'})
+
+    fav, created = FavoriteIngredient.objects.get_or_create(user=request.user, name=name)
+    if not created:
+        fav.delete()
+        return JsonResponse({'success': True, 'is_favorited': False})
+    return JsonResponse({'success': True, 'is_favorited': True})
+
+
+@login_required
+def check_favorite_status(request):
+    """前端加载时检查收藏状态"""
+    name = request.GET.get('name', '').strip()
+    if not name:
+        return JsonResponse({'success': False, 'error': '名称不能为空'})
+    is_favorited = FavoriteIngredient.objects.filter(user=request.user, name=name).exists()
+    return JsonResponse({'success': True, 'is_favorited': is_favorited})
+
+
+@login_required
+def add_to_fridge(request):
+    """向冰箱添加食材 (AJAX POST)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '请求方法错误'})
+
+    name = request.POST.get('name', '').strip()
+    quantity = int(request.POST.get('quantity', 1))
+    source = request.POST.get('source', 'recognized')
+
+    if not name:
+        return JsonResponse({'success': False, 'error': '名称不能为空'})
+
+    item, created = FridgeItem.objects.get_or_create(
+        user=request.user,
+        name=name,
+        source=source,
+        defaults={'quantity': quantity}
+    )
+    if not created:
+        item.quantity += quantity
+        item.save()
+    return JsonResponse({'success': True})
+
+
+@login_required
+def fridge_view(request):
+    """冰箱页面，显示所有食材"""
+    items = FridgeItem.objects.filter(user=request.user)
+    return render(request, 'fruit/fridge.html', {'items': items})
+
+# 我的页面
+
 def my_view(request):
     if not request.user.is_authenticated:
         return redirect('login_view')

@@ -1,0 +1,58 @@
+{% extends 'fruit/base_store.html' %}
+
+{% block title %}我的冰箱 - 饭了么{% endblock %}
+
+{% block extra_head %}
+<style>
+.fridge-btn {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+}
+.fridge-row {
+    margin-bottom:12px;
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.05);
+    padding:14px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+.fridge-row > div:first-child {flex:1; display:flex; align-items:center; gap:10px;}
+.fridge-row > div:nth-child(2) {flex:0 0 80px; text-align:center; font-weight:700;}
+.fridge-row > div:last-child {flex:0 0 100px; text-align:right; font-size:12px; color:#888;}
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 position-relative"><i class="fas fa-ice-cream"></i> 我的冰箱
+    <a class="btn btn-outline-primary fridge-btn" href="{% url 'recognize_fruit' %}"><i class="fas fa-camera me-1"></i> 去识别</a>
+</h2>
+    {% if items %}
+    <div class="fridge-list">
+        {% for item in items %}
+        <div class="fridge-row d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <i class="fas fa-leaf text-success"></i>
+                <span class="fw-semibold ms-2">{{ item.name }}</span>
+            </div>
+            <div>x{{ item.quantity }}</div>
+            <div>{{ item.created_at|date:"Y-m-d" }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-ice-cream fa-3x text-muted mb-3"></i>
+        <p class="text-muted">您的冰箱空空如也，快去识别或购买食材吧！</p>
+        <a class="btn btn-primary" href="{% url 'recognize_fruit' %}"><i class="fas fa-camera me-2"></i>去识别</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

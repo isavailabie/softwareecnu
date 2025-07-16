@@ -5,6 +5,10 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'fruit/recipe.css' %}">
+<style>
+.ingredient-match{color:#007bff;font-weight:600;}
+.ingredient-extra{color:#dc3545;font-weight:600;}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -319,20 +323,10 @@
         const healthyContainer = document.getElementById('healthy-container');
         if (healthyBtn) {
             healthyBtn.addEventListener('click', function () {
-                // 收集当前填写的食材，若为空则提示
-                const payload = {
-                    physical_data: [
-                        {user_id: 'user1', height: 175, weight: 68, age: 32, activity_level: 'moderate'},
-                        {user_id: 'user2', height: 165, weight: 55, age: 28, activity_level: 'light'}
-                    ],
-                    history: [
-                        {date: '2023-07-01', dishes: ['a','b','c']},
-                        {date: '2023-07-02', dishes: ['d','e','f']}
-                    ],
-                    ingredients: ['tomato','egg']
-                };
+                // 发起后端健康推荐请求
+                const payload = {};
 
-                fetch("{% url 'recommender:recommend' %}", {
+                fetch("{% url 'healthy_recommend' %}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

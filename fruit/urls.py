@@ -15,6 +15,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout_view'),
     path('recipe/', views.recipe_view, name='recipe_view'),
     path('recommend_recipes/', views.recommend_recipes, name='recommend_recipes'),
+    path('healthy_recommend/', views.healthy_recommend, name='healthy_recommend'),
     path('recipe/<int:recipe_id>/', views.recipe_detail, name='recipe_detail'),
     path('fridge/', views.recognize_fruit, name='recognize_fruit'),
     path('toggle-favorite/', views.toggle_favorite_ingredient, name='toggle_favorite_ingredient'),

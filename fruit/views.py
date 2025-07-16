@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import CartItem, Recipe, Ingredient, RecipeIngredient, FavoriteIngredient, FridgeItem, UserCalorieRecord, UserProfile
 from django.utils import timezone
+from recommender.models import RecipeFlat
 import datetime
 import json
 
@@ -558,59 +559,106 @@ def recommend_recipes(request):
 # 菜谱详情页
 @login_required
 def recipe_detail(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    recipe_ingredients = RecipeIngredient.objects.filter(recipe=recipe)
-    
-    # 将烹饪步骤拆分为列表
+    """菜谱详情：改为从 recommender_recipeflat (RecipeFlat) 读取"""
+    recipe = get_object_or_404(RecipeFlat, id=recipe_id)
+
+    # ingredients: list[{name, amount}]
+    ingredients_list = [
+        {
+            'ingredient': {'name': item.get('name', '')},
+            'amount': item.get('amount', '')
+        }
+        for item in (recipe.ingredients or [])
+    ]
+
+    # steps: 支持 list / 换行字符串 两种格式
     steps = []
-    for i, step_text in enumerate(recipe.steps.split('\n')):
-        if step_text.strip():
-            step = {
+    if isinstance(recipe.steps, list):
+        for i, s in enumerate(recipe.steps):
+            if not s:
+                continue
+            if isinstance(s, dict):
+                desc = s.get('description') or s.get('step') or ''
+                tip = s.get('tip', '')
+            else:
+                desc = str(s)
+                tip = ''
+            steps.append({
                 'number': i + 1,
                 'title': f"步骤 {i + 1}",
-                'description': step_text.strip(),
-                'tip': ''
-            }
-            steps.append(step)
-    
-    # 准备营养信息
-    nutrition = [
-        {'value': recipe.calories.replace('大卡', '').replace('千卡', '') if recipe.calories else '0', 'label': '卡路里'},
-        {'value': recipe.protein, 'label': '蛋白质'},
-        {'value': recipe.fat, 'label': '脂肪'},
-        {'value': recipe.carbohydrates, 'label': '碳水化合物'}
-    ]
-    
-    # 准备小贴士
-    tips = [
-        {
-            'title': '选材技巧',
-            'content': f'选择新鲜的食材，特别是{", ".join([ri.ingredient.name for ri in recipe_ingredients[:2]])}等主要食材，以保证菜品的口感和营养。'
-        },
-        {
-            'title': '火候控制',
-            'content': '根据食材的特性调整火候，保持食材的最佳口感和营养。'
-        },
-        {
-            'title': '调味秘诀',
-            'content': '调味料要适量，先尝后调，循序渐进地添加调味料，以免过咸或过淡。'
-        },
-        {
-            'title': '营养搭配',
-            'content': f'这道菜富含{recipe.protein}蛋白质和{recipe.carbohydrates}碳水化合物，是很好的营养搭配。'
-        }
-    ]
+                'description': desc.strip(),
+                'tip': tip
+            })
+    elif recipe.steps:
+        for i, step_text in enumerate(str(recipe.steps).split('\n')):
+            if step_text.strip():
+                steps.append({
+                    'number': i + 1,
+                    'title': f"步骤 {i + 1}",
+                    'description': step_text.strip(),
+                    'tip': ''
+                })
+
+    # 营养信息
+    nutrition_data = recipe.nutrition or {}
+    if isinstance(nutrition_data, dict):
+        nutrition = [{'label': k, 'value': v} for k, v in nutrition_data.items()]
+    elif isinstance(nutrition_data, list):
+        nutrition = nutrition_data
+    else:
+        nutrition = []
     
     context = {
         'recipe': recipe,
-        'ingredients': recipe_ingredients,
+        'ingredients': ingredients_list,
         'steps': steps,
         'nutrition': nutrition,
-        'tips': tips,
+        'tips': [],
         'match_percentage': request.GET.get('match', '100%')
     }
     
     return render(request, 'fruit/recipe_detail.html', context)
+
+
+from django.views.decorators.http import require_POST
+from django.test.client import RequestFactory
+import json
+from recommender.views import recommend_view
+
+@login_required
+@require_POST
+def healthy_recommend(request):
+    """返回为当前用户推荐的健康菜谱，数据来自 recommender.recommend_view"""
+    user = request.user
+    # 1. 从冰箱收集可用食材
+    ing_qs = FridgeItem.objects.filter(user=user).values_list('name', flat=True)
+    available_ingredients = list(ing_qs)
+
+    # TODO: 根据实际模型获取用户体征和历史饮食
+    physical_data = []
+    history = []
+
+    payload = {
+        "available_ingredients": available_ingredients,
+        "physical_data": physical_data,
+        "history": history,
+    }
+
+    rf = RequestFactory()
+    proxy_req = rf.post('/recommender/recommend/', data=json.dumps(payload), content_type='application/json')
+    # 调用 recommender 应用的视图函数
+    response = recommend_view(proxy_req)
+    data = json.loads(response.content)
+    match_set = {name.lower() for name in available_ingredients}
+    for rec in data.get("recipes", []):
+        needs_extra = False
+        for ing in rec.get("ingredients", []) or []:
+            n = ing.get("name", "").lower()
+            ing["is_match"] = n in match_set
+            if not ing["is_match"]:
+                needs_extra = True
+        rec["needs_extra"] = needs_extra
+    return JsonResponse(data)
 
 
 def recognize_fruit(request):

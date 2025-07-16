@@ -5,14 +5,42 @@ from django.http import JsonResponse, HttpRequest
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import Recipe
+from .models import Recipe, RecipeFlat, EnergyRequirement, ProteinRequirement
+from django.utils import timezone
+import datetime, re, random
 
 
-def _score_recipe(recipe: Recipe, provided: set) -> float:
-    """简单打分：完全包含给 1.0，缺失给 0.5。"""
-    ingredients = set(recipe.ingredients.values_list("name", flat=True))
-    missing = ingredients - provided
-    return 1.0 if not missing else 0.5
+def _score_recipe(recipe: RecipeFlat, provided: set, target_calories: float) -> float:
+    """综合打分：
+    1. 热量差距得分 (越接近越高)
+    2. 食材覆盖率得分 (覆盖≥40% 才合格)
+    总分 = 0.6 * 热量得分 + 0.4 * 覆盖率
+    """
+    # 热量
+    cal_str = recipe.calories or "0"
+    m = re.search(r"(\d+)", cal_str)
+    cal_value = float(m.group(1)) if m else 0.0
+    calorie_diff_ratio = abs(cal_value - target_calories) / target_calories if target_calories else 1
+    calorie_score = max(0.0, 1 - calorie_diff_ratio)  # 误差 0 -> 1 分
+
+    # 覆盖率
+    ing_raw = recipe.ingredients or []
+    if isinstance(ing_raw, str):
+        try:
+            ing_list = json.loads(ing_raw)
+        except Exception:
+            ing_list = []
+    else:
+        ing_list = ing_raw
+    ing_names = {i.get("name", "").lower() for i in ing_list if i.get("name")}
+    if not ing_names:
+        cover_score = 0.0
+    else:
+        cover_ratio = len(ing_names & provided) / len(ing_names)
+        cover_score = cover_ratio
+    if cover_score == 0:
+        return 0.0  # 无任何可用食材则淘汰
+    return 0.6 * calorie_score + 0.4 * cover_score
 
 
 @csrf_exempt  # 先关闭 CSRF，后期可改为 token 鉴权
@@ -44,6 +72,7 @@ def recommend_view(request: HttpRequest):
 
     try:
         body = json.loads(request.body.decode())
+        print(f"[Recommend] request_body={body}")
         # 兼容字段名：优先使用新字段 available_ingredients，其次回退到旧字段 ingredients
         ing_list: List[str] = body.get("available_ingredients") or body.get("ingredients", [])
         physical_list = body.get("physical_data", [])
@@ -57,46 +86,91 @@ def recommend_view(request: HttpRequest):
 
     provided_set = {i.lower() for i in ing_list}
 
-    # 暂时不访问数据库，固定返回示例菜谱列表。
-    sample_recipe = {
-        "id": 1,
-        "dish_name": "刀豆焖排骨",
-        "title": "刀豆焖排骨",  # 为兼容旧字段
-        "image_url": "https://i3.meishichina.com/atta/recipe/2025/07/07/202507071751856530463474389860.jpg?x-oss-process=style/p800",
-        "image_path": "images/刀豆焖排骨.jpg",
-        "ingredients": [
-            {"name": "排骨", "amount": "400g"},
-            {"name": "蒜头", "amount": "2瓣"},
-            {"name": "盐", "amount": "半匙"},
-            {"name": "辣椒粉", "amount": "少许"},
-            {"name": "蚝油", "amount": "1勺"}
-        ],
-        "steps": [
-            "刀豆洗净切段备用。",
-            "排骨洗净用少许生粉、生抽腌制20分钟。",
-            "蒜头切片。",
-            "锅中倒入适量油，下蒜头爆香。",
-            "下排骨翻炒一下。",
-            "再下入刀豆，翻炒一下。",
-            "撒入盐。",
-            "加蚝油。",
-            "撒入辣椒粉，翻炒均匀。",
-            "倒入一碗清水，中小火焖煮20分钟左右即可。"
-        ],
-        "calories": "1170大卡",
-        "nutrition": {
-            "energy": "1170千卡",
-            "protein": "55克",
-            "fat": "80克",
-            "carbohydrates": "10克",
-            "fiber": "3克",
-            "sodium": "2500毫克"
-        },
-        "description": "这道菜将鲜嫩的排骨与清香的刀豆结合，口感丰富，咸香适口，是一道家常下饭菜。",
-        "cook_time": "40分钟",
-        "difficulty": "中等",
-        "servings": "4人份",
-        "score": 1.0
-    }
+    # ------------- 实际推荐逻辑 -------------
+    # 1. 推断当前餐次
+    now = timezone.localtime()
+    minutes = now.hour * 60 + now.minute
+    if minutes < 9 * 60 + 30:
+        meal_percent = 0.275  # 早餐
+    elif minutes < 14 * 60 + 30:
+        meal_percent = 0.375  # 午餐
+    else:
+        meal_percent = 0.275  # 晚餐
 
-    return JsonResponse({"recipes": [sample_recipe]})
+    # 2. 获取第一个用户体征，简单支持单用户
+    if physical_list:
+        pdata = physical_list[0]
+        age = int(pdata.get("age", 30))
+        sex = pdata.get("sex", "M")[:1].upper()  # M / F
+        act_map = {"sedentary": "I", "light": "I", "moderate": "II", "active": "III"}
+        pal = act_map.get(pdata.get("activity_level", "moderate"), "II")
+    else:
+        age, sex, pal = 30, "M", "II"
+
+    enr = EnergyRequirement.objects.using("recommend").filter(
+        sex=sex, pal_level=pal, age_min__lte=age, age_max__gte=age
+    ).first()
+    if enr:
+        total_calories = float(re.search(r"(\d+)", enr.value).group(1))
+    else:
+        total_calories = 2000.0  # fallback
+
+    target_calories = total_calories * meal_percent
+
+    # DEBUG 输出能量计算信息
+    print(f"[Recommend] age={age}, sex={sex}, pal={pal}, total_cal={total_calories}, meal_percent={meal_percent}, target_cal={target_calories}")
+
+    # 3. 计算食材集合
+    provided = {i.lower() for i in ing_list}
+    history_titles = {dish.lower() for record in history_list for dish in record.get("dishes", [])}
+
+    # 4. 为所有 RecipeFlat 计算得分
+    candidates = []
+    for r in RecipeFlat.objects.using("recommend").all():
+        if r.title.lower() in history_titles:
+            continue
+        score = _score_recipe(r, provided, target_calories)
+        if score > 0:
+            candidates.append((score, r))
+
+    # 5. 排序并取前 9 条
+    candidates.sort(key=lambda x: x[0], reverse=True)
+
+    print(f"[Recommend] candidate_with_score={len(candidates)}")
+    if candidates:
+        top = candidates[:9]
+        result = [
+            {
+                "id": r.id,
+                "title": r.title,
+                "image_url": r.image_url,
+                "calories": r.calories,
+                "category": r.category,
+                "score": round(score, 3),
+                "cook_time": r.cook_time,
+                "difficulty": r.difficulty,
+                "ingredients": r.ingredients,
+            }
+            for score, r in top
+        ]
+        print(f"[Recommend] available_ing={len(provided)}, history_titles={len(history_titles)}")
+    else:
+        # 无匹配时随机返回 9 道（排除历史记录）
+        qs = RecipeFlat.objects.using("recommend").exclude(title__in=list(history_titles))
+        sample = random.sample(list(qs[:100]), k=min(9, qs.count())) if qs.exists() else []
+        result = [
+            {
+                "id": r.id,
+                "title": r.title,
+                "image_url": r.image_url,
+                "calories": r.calories,
+                "category": r.category,
+                "score": 0.0,
+                "cook_time": r.cook_time,
+                "difficulty": r.difficulty,
+                "ingredients": r.ingredients,
+            }
+            for r in sample
+        ]
+
+    return JsonResponse({"recipes": result})

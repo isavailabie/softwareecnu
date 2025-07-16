@@ -61,6 +61,72 @@ class ProteinRequirement(models.Model):
         return f"{self.get_sex_display()} {self.req_type} {self.age_min}-{self.age_max}: {self.value}{self.unit}"
 
 
+
+class RecipeDetail(models.Model):
+    """菜谱详情表，存储图片、营养等附加信息。"""
+    recipe = models.OneToOneField(Recipe, on_delete=models.CASCADE, related_name="detail")
+    image_url = models.URLField(blank=True)
+    image_path = models.CharField(max_length=200, blank=True)
+    calories = models.CharField(max_length=50, blank=True)
+    nutrition = models.JSONField(blank=True, null=True)
+    description = models.TextField(blank=True)
+    cook_time = models.CharField(max_length=50, blank=True)
+    difficulty = models.CharField(max_length=20, blank=True)
+    category = models.CharField(max_length=50, blank=True)  # 类型/标签
+    servings = models.CharField(max_length=20, blank=True)
+    steps = models.JSONField(blank=True, null=True)
+    rating_sum = models.PositiveIntegerField(default=4)
+    rating_count = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.recipe.title} - detail"
+
+
+class RecipeFlat(models.Model):
+    """Denormalized recipe table storing all fields in one row."""
+    title = models.CharField(max_length=100, unique=True)
+    image_url = models.URLField(blank=True)
+    image_path = models.CharField(max_length=200, blank=True)
+    calories = models.CharField(max_length=50, blank=True)
+    nutrition = models.JSONField(blank=True, null=True)
+    description = models.TextField(blank=True)
+    cook_time = models.CharField(max_length=50, blank=True)
+    difficulty = models.CharField(max_length=20, blank=True)
+    category = models.CharField(max_length=50, blank=True)
+    servings = models.CharField(max_length=20, blank=True)
+    steps = models.JSONField(blank=True, null=True)
+    ingredients = models.JSONField(blank=True, null=True)  # list of {name, amount}
+    rating_sum = models.PositiveIntegerField(default=4)
+    rating_count = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return self.title
+
+
+class TempRecipeFlat(models.Model):
+    """Temporary duplicate of RecipeFlat with identical schema."""
+    title = models.CharField(max_length=100, unique=True)
+    image_url = models.URLField(blank=True)
+    image_path = models.CharField(max_length=200, blank=True)
+    calories = models.CharField(max_length=50, blank=True)
+    nutrition = models.JSONField(blank=True, null=True)
+    description = models.TextField(blank=True)
+    cook_time = models.CharField(max_length=50, blank=True)
+    difficulty = models.CharField(max_length=20, blank=True)
+    category = models.CharField(max_length=50, blank=True)
+    servings = models.CharField(max_length=20, blank=True)
+    steps = models.JSONField(blank=True, null=True)
+    ingredients = models.JSONField(blank=True, null=True)
+    rating_sum = models.PositiveIntegerField(default=4)
+    rating_count = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        db_table = "temp_recommender_recipeflat"
+
+    def __str__(self):
+        return self.title
+
+
 class RecipeIngredient(models.Model):
     """菜谱与食材的多对多关系表。"""
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)

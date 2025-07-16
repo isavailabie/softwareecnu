@@ -97,9 +97,14 @@
     </div>
     
     <!-- 猜你喜欢区域 -->
-    <div class="section-title">
-        <h2><i class="fas fa-heart"></i> 猜你喜欢</h2>
+    <div class="section-title" style="display:flex; align-items:center; gap:20px;">
+        <h2 style="margin:0;"><i class="fas fa-heart"></i> 猜你喜欢</h2>
+        <button type="button" class="btn btn-secondary" id="healthy-recommend-btn" style="padding:6px 12px; font-size:14px;">
+            <i class="fas fa-leaf"></i> 健康饮食推荐
+        </button>
     </div>
+    <!-- 健康推荐结果容器 -->
+    <div class="recipes-grid" id="healthy-container"></div>
 
     <div class="recipes-grid">
         {% for recipe in popular_recipes %}
@@ -309,6 +314,47 @@
             filterCheckbox.addEventListener('change', filterRecipes);
         }
         
+        // 健康饮食推荐按钮
+        const healthyBtn = document.getElementById('healthy-recommend-btn');
+        const healthyContainer = document.getElementById('healthy-container');
+        if (healthyBtn) {
+            healthyBtn.addEventListener('click', function () {
+                // 收集当前填写的食材，若为空则提示
+                const payload = {
+                    physical_data: [
+                        {user_id: 'user1', height: 175, weight: 68, age: 32, activity_level: 'moderate'},
+                        {user_id: 'user2', height: 165, weight: 55, age: 28, activity_level: 'light'}
+                    ],
+                    history: [
+                        {date: '2023-07-01', dishes: ['a','b','c']},
+                        {date: '2023-07-02', dishes: ['d','e','f']}
+                    ],
+                    ingredients: ['tomato','egg']
+                };
+
+                fetch("{% url 'recommender:recommend' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+                    },
+                    body: JSON.stringify(payload)
+                }).then(r => r.json()).then(data => {
+                    healthyContainer.innerHTML = '';
+                    const list = Array.isArray(data.recipes) ? data.recipes : (data.dish_name ? [data] : []);
+                    if (!list.length) {
+                        alert('暂无健康推荐结果');
+                        return;
+                    }
+                    list.forEach(rcp => healthyContainer.appendChild(createRecipeCard(rcp)));
+                    healthyContainer.scrollIntoView({behavior:'smooth'});
+                }).catch(err => {
+                    console.error(err);
+                    alert('健康推荐失败，请稍后再试');
+                });
+            });
+        }
+
         // 过滤菜谱函数
         function filterRecipes() {
             const recipeCards = document.querySelectorAll('#recipes-container .recipe-card');
@@ -326,29 +372,31 @@
             const template = recipeCardTemplate.content.cloneNode(true);
             const card = template.querySelector('.recipe-card');
             
-            // 设置数据属性
-            card.dataset.extra = recipe.needs_extra.toString();
+            // 设置数据属性（兼容无 needs_extra 字段的情况）
+            const needsExtra = recipe.needs_extra !== undefined ? recipe.needs_extra : false;
+            card.dataset.extra = needsExtra.toString();
             
             // 设置图片和标题
             const img = card.querySelector('.recipe-image img');
-            img.src = recipe.image_url;
-            img.alt = recipe.title;
+            img.src = recipe.image_url || recipe.image_path || '';
+            img.alt = recipe.title || recipe.dish_name || '';
             
             // 设置匹配度
             const matchDiv = card.querySelector('.recipe-match');
-            matchDiv.textContent = `${recipe.match_percentage}% 匹配`;
+            const matchVal = recipe.match_percentage !== undefined ? `${recipe.match_percentage}% 匹配` : (recipe.score !== undefined ? `${Math.round(recipe.score*100)}% 推荐` : '');
+            matchDiv.textContent = matchVal;
             
             // 设置标题
-            card.querySelector('.recipe-title').textContent = recipe.title;
+            card.querySelector('.recipe-title').textContent = recipe.title || recipe.dish_name || '';
             
             // 设置烹饪时间和难度
             const metaItems = card.querySelectorAll('.meta-item span');
-            metaItems[0].textContent = `${recipe.cooking_time}分钟`;
-            metaItems[1].textContent = recipe.difficulty;
+            metaItems[0].textContent = recipe.cooking_time ? `${recipe.cooking_time}分钟` : (recipe.cook_time || '');
+            metaItems[1].textContent = recipe.difficulty || '';
             
             // 添加食材
             const ingredientsList = card.querySelector('.ingredients-list');
-            recipe.ingredients.forEach(ingredient => {
+            (recipe.ingredients || []).forEach(ingredient => {
                 const li = document.createElement('li');
                 
                 if (ingredient.is_match) {

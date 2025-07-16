@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'fruit',
+    'recommender',
 ]
 
 MIDDLEWARE = [
@@ -78,7 +79,16 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    },
+    # 新增的推荐系统数据库
+    'recommend': {
+        'ENGINE': 'django.db.backends.sqlite3',  # 可替换为其他后端，如 django.db.backends.mysql
+        'NAME': BASE_DIR / 'recommend.sqlite3',  # 路径或数据库名，根据实际需求修改
+        # 'USER': '',
+        # 'PASSWORD': '',
+        # 'HOST': '',
+        # 'PORT': '',
+    },
 }
 
 

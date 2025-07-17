@@ -126,7 +126,7 @@
                 <div class="recipe-meta">
                     <div class="meta-item">
                         <i class="fas fa-clock"></i>
-                        <span>{{ recipe.cooking_time }}分钟</span>
+                        <span>{{ recipe.cook_time }}</span>
                     </div>
                     
                     <div class="meta-item">
@@ -141,8 +141,8 @@
                 </div>
                 
                 <ul class="ingredients-list">
-                    {% for ingredient in recipe.recipeingredient_set.all %}
-                    <li>{{ ingredient.ingredient.name }} {{ ingredient.amount }}</li>
+                    {% for ingredient in recipe.ingredients %}
+                    <li>{{ ingredient.name }} {{ ingredient.amount }}</li>
                     {% endfor %}
                 </ul>
                 
@@ -168,7 +168,7 @@
                 <div class="recipe-meta">
                     <div class="meta-item">
                         <i class="fas fa-clock"></i>
-                        <span>{{ recipe.cooking_time }}分钟</span>
+                        <span>{{ recipe.cook_time }}</span>
                     </div>
                     
                     <div class="meta-item">
@@ -183,8 +183,8 @@
                 </div>
                 
                 <ul class="ingredients-list">
-                    {% for ingredient in recipe.recipeingredient_set.all %}
-                    <li>{{ ingredient.ingredient.name }} {{ ingredient.amount }}</li>
+                    {% for ingredient in recipe.ingredients %}
+                    <li>{{ ingredient.name }} {{ ingredient.amount }}</li>
                     {% endfor %}
                 </ul>
                 

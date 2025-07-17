@@ -14,6 +14,10 @@ import requests
 from django.conf import settings
 from PIL import Image
 
+# 常用佐料/调味品列表：忽略匹配和显示
+CONDIMENTS = {
+    '葱花', '姜末', '蒜末', '料酒', '酱油', '白砂糖', '醋', '水淀粉', '干淀粉', '食用油','香醋','白糖','鸡精','姜','盐','清水'
+}
 
 # 商品数据（实际项目应从数据库获取）
 PRODUCTS = [
@@ -271,7 +275,7 @@ def recommend_recipes(request):
         for recipe in candidate_recipes:
             # 当前菜谱的全部食材记录
             recipe_ingredients_qs = RecipeIngredient.objects.filter(recipe=recipe).select_related('ingredient')
-            recipe_ingredient_names = [ri.ingredient.name for ri in recipe_ingredients_qs]
+            recipe_ingredient_names = [ri.ingredient.name for ri in recipe_ingredients_qs if ri.ingredient.name not in CONDIMENTS]
 
             # 匹配度 = 输入食材与菜谱食材交集 / 菜谱总食材
             matched_ingredients = set(ingredients) & set(recipe_ingredient_names)
@@ -293,10 +297,12 @@ def recommend_recipes(request):
             }
 
             for ri in recipe_ingredients_qs:
+                if ri.ingredient.name in CONDIMENTS:
+                    continue
                 recipe_data['ingredients'].append({
                     'name': ri.ingredient.name,
                     'amount': ri.amount,
-                    'is_match': ri.ingredient.name in matched_ingredients
+                    'is_match': (ri.ingredient.name in CONDIMENTS) or (ri.ingredient.name in matched_ingredients)
                 })
 
             matching_recipes.append(recipe_data)
@@ -402,8 +408,41 @@ def healthy_recommend(request):
     response = recommend_view(proxy_req)
     data = json.loads(response.content)
     match_set = {name.lower() for name in available_ingredients}
-    for rec in data.get("recipes", []):
-        needs_extra = False
+
+    # 兼容新版 combos 结构
+    if "combos" in data:
+        for combo in data["combos"]:
+            for part in (combo.get("main"), combo.get("side")):
+                if not part:
+                    continue
+                needs_extra = False
+                original_ings = part.get("ingredients", []) or []
+                # 过滤掉佐料
+                filtered_ings = [ing for ing in original_ings if ing.get("name", "").lower() not in CONDIMENTS]
+                part["ingredients"] = filtered_ings
+                for ing in filtered_ings:
+                    n = ing.get("name", "").lower()
+                    if n in CONDIMENTS:
+                        ing["is_match"] = True
+                        continue
+                    ing["is_match"] = n in match_set
+                    if not ing["is_match"]:
+                        needs_extra = True
+                part["needs_extra"] = needs_extra
+    else:
+        # 旧版 recipes 列表
+        for rec in data.get("recipes", []):
+            needs_extra = False
+            original_ings = rec.get("ingredients", []) or []
+            filtered_ings = [ing for ing in original_ings if ing.get("name", "").lower() not in CONDIMENTS]
+            rec["ingredients"] = filtered_ings
+            needs_extra = False
+            for ing in filtered_ings:
+                n = ing.get("name", "").lower()
+                ing["is_match"] = n in match_set
+                if not ing["is_match"]:
+                    needs_extra = True
+            rec["needs_extra"] = needs_extra
         for ing in rec.get("ingredients", []) or []:
             n = ing.get("name", "").lower()
             ing["is_match"] = n in match_set

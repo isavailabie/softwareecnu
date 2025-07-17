@@ -2,12 +2,14 @@ import json
 from typing import List
 
 from django.http import JsonResponse, HttpRequest
+from django.db import IntegrityError
+from .models import TempRecipeFlat
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import Recipe, RecipeFlat, EnergyRequirement, ProteinRequirement
 from django.utils import timezone
-import datetime, re, random
+import datetime, re, random, os, requests
 
 
 def _score_recipe(recipe: RecipeFlat, provided: set, target_calories: float) -> float:
@@ -137,6 +139,155 @@ def recommend_view(request: HttpRequest):
     candidates.sort(key=lambda x: x[0], reverse=True)
 
     print(f"[Recommend] candidate_with_score={len(candidates)}")
+
+    # -------- 组合推荐：一菜一汤 或 一菜一凉菜 ---------
+    def _cal_num(cal_str: str) -> float:
+        m = re.search(r"(\d+)", cal_str or "")
+        return float(m.group(1)) if m else 0.0
+
+    # 分类列表
+    recai_list, tanggeng_list, liangcai_list = [], [], []
+    for score, r in candidates:
+        cat = (r.category or "").lower()
+        if cat == "recai":
+            recai_list.append((score, r))
+        elif cat == "tanggeng":
+            tanggeng_list.append((score, r))
+        elif cat == "liangcai":
+            liangcai_list.append((score, r))
+
+    # 若某类不足则补随机，但仍保持列表类型存在
+    random.shuffle(tanggeng_list)
+    random.shuffle(liangcai_list)
+
+    combos: list[tuple[float, RecipeFlat, RecipeFlat, float]] = []  # (combo_score, main, side, total_cal)
+    for m_score, m_rec in recai_list[:30]:
+        for s_score, s_rec in (tanggeng_list[:30] + liangcai_list[:30]):
+            total_cal = _cal_num(m_rec.calories) + _cal_num(s_rec.calories)
+            if total_cal <= target_calories:
+                combo_score = (m_score + s_score) / 2
+                combos.append((combo_score, m_rec, s_rec, total_cal))
+        if len(combos) >= 50:
+            break
+
+    # 排序并取前 9 组
+    combos.sort(key=lambda x: x[0], reverse=True)
+    top_combos = combos[:9]
+
+    def _serialize(r: RecipeFlat):
+        return {
+            "id": r.id,
+            "title": r.title,
+            "image_url": r.image_url,
+            "calories": r.calories,
+            "category": r.category,
+            "cook_time": r.cook_time,
+            "difficulty": r.difficulty,
+            "ingredients": r.ingredients,
+        }
+
+    local_combos = [
+        {
+            "main": _serialize(main),
+            "side": _serialize(side),
+            "total_calories": round(tcal, 1),
+            "score": round(cs, 3),
+        }
+        for cs, main, side, tcal in top_combos
+    ]
+
+    # ---------------- AI 组合补充 ----------------
+    def _get_ai_combos(ings: list[str], tgt_cal: float):
+        api_key = os.getenv("CHATECNU_API_KEY")
+        print(f"[Recommend] env CHATECNU_API_KEY present={bool(api_key)}")
+        if not api_key:
+            return []
+        prompt = (
+            f"请根据食材列表 {', '.join(ings)} ，推荐 2 组中式组合：每组包含一份热菜(类别 recai)和一份汤羹或凉菜(类别 tanggeng/liangcai)，"
+            f"总热量不超过 {round(tgt_cal)} 千卡。请以 JSON 格式返回：{{\n  \"combos\":[{{\n      \"main\": {{...}},\n      \"side\": {{...}},\n      \"total_calories\": 0\n  }}]\n}} ，不要附加解释文字。"
+        )
+        payload = {
+            "messages": [
+                {"role": "system", "content": "你是华东师范大学大模型ChatECNU"},
+                {"role": "user", "content": prompt},
+            ],
+            "stream": False,
+            "model": "ecnu-plus",
+        }
+        try:
+            resp = requests.post(
+                "https://chat.ecnu.edu.cn/open/api/v1/chat/completions",
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}",
+                },
+                json=payload,
+                timeout=20,
+            )
+            if resp.status_code == 200:
+                print(f"[Recommend] AI status=200, raw={resp.text[:400]}")
+                print(f"[Recommend] AI raw response: {resp.text[:400]}")
+                choices = resp.json().get("choices", [])
+                if choices:
+                    content = choices[0].get("message", {}).get("content", "")
+                    print(f"[Recommend] AI content={content[:200]}")
+                    content_clean = re.sub(r"```(?:json)?|```", "", content).strip()
+                    content_clean = re.sub(r"```(?:json)?|```", "", content).strip()
+                    try:
+                        data = json.loads(content_clean)
+                    except json.JSONDecodeError as e:
+                        print(f"[Recommend] AI JSON parse error: {e}. raw={content_clean[:200]}")
+                        return []
+                    return data.get("combos", [])
+        except Exception as e:
+            print(f"[Recommend] AI recommend error: {e}")
+        return []
+
+    ai_combos_raw = _get_ai_combos(list(provided_set), target_calories)[:2]
+    # 标准化字段 & 标记 AI 生成
+    # 保存 AI 组合到临时表，若已存在则复用
+    ai_combos = []
+    for c in ai_combos_raw:
+        for part in ("main", "side"):
+            item = c.get(part, {})
+            # name -> title 兼容
+            if "title" not in item and "name" in item:
+                item["title"] = item.pop("name")
+            # ingredients: list[str] -> list[dict]
+            ings = item.get("ingredients")
+            if isinstance(ings, list) and (not ings or isinstance(ings[0], str)):
+                item["ingredients"] = [{"name": n} for n in ings]
+            # 保存到临时表
+            temp_recipe, created = TempRecipeFlat.objects.get_or_create(
+                title=item["title"],
+                defaults={
+                    "image_url": item.get("image_url", ""),
+                    "calories": item.get("calories", ""),
+                    "category": item.get("category", ""),
+                    "cook_time": item.get("cook_time", ""),
+                    "difficulty": item.get("difficulty", ""),
+                    "ingredients": item.get("ingredients", []),
+                },
+            )
+            if created:
+                print(f"[Recommend] [TempRecipe] saved: {temp_recipe.title}")
+            item_dict = _serialize(temp_recipe)
+            item_dict["title"] = item_dict.get("title", "") + "（AI生成）"
+            c[part] = item_dict
+
+    
+
+    # ---- 构造最终列表：最多 7 本地 + 若干 AI(<=2) ----
+    final_combos = local_combos[:7]  # 先取前 7 条数据库结果
+    insert_positions = [2, 5]  # 目标插入索引
+    for idx, ai_combo in enumerate(ai_combos_raw):
+        pos = insert_positions[idx]
+        if pos <= len(final_combos):
+            final_combos.insert(pos, ai_combo)
+        else:
+            final_combos.append(ai_combo)
+
+    return JsonResponse({"combos": final_combos})
     if candidates:
         top = candidates[:9]
         result = [
@@ -173,4 +324,4 @@ def recommend_view(request: HttpRequest):
             for r in sample
         ]
 
-    return JsonResponse({"recipes": result})
+    pass

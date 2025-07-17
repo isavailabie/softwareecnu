@@ -8,6 +8,8 @@
 <style>
 .ingredient-match{color:#007bff;font-weight:600;}
 .ingredient-extra{color:#dc3545;font-weight:600;}
+.combo-parts{display:flex;gap:12px;margin-top:8px;}
+.combo-part{flex:1;border-top:1px solid #eee;padding-top:6px;}
 </style>
 {% endblock %}
 
@@ -323,25 +325,28 @@
         const healthyContainer = document.getElementById('healthy-container');
         if (healthyBtn) {
             healthyBtn.addEventListener('click', function () {
-                // 发起后端健康推荐请求
-                const payload = {};
-
+                // 发起后端健康推荐请求（无需前端拼装食材）
                 fetch("{% url 'healthy_recommend' %}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+                        'X-CSRFToken': document.querySelector('input[name=\"csrfmiddlewaretoken\"]').value
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({})
                 }).then(r => r.json()).then(data => {
                     healthyContainer.innerHTML = '';
-                    const list = Array.isArray(data.recipes) ? data.recipes : (data.dish_name ? [data] : []);
-                    if (!list.length) {
-                        alert('暂无健康推荐结果');
-                        return;
+                    let combos = Array.isArray(data.combos) ? data.combos : null;
+                    if (combos && combos.length) {
+                        combos.forEach(cb => healthyContainer.appendChild(createComboCard(cb)));
+                    } else {
+                        const list = Array.isArray(data.recipes) ? data.recipes : (data.dish_name ? [data] : []);
+                        if (!list.length) {
+                            alert('暂无健康推荐结果');
+                            return;
+                        }
+                        list.forEach(rcp => healthyContainer.appendChild(createRecipeCard(rcp)));
                     }
-                    list.forEach(rcp => healthyContainer.appendChild(createRecipeCard(rcp)));
-                    healthyContainer.scrollIntoView({behavior:'smooth'});
+                    healthyContainer.scrollIntoView({ behavior: 'smooth' });
                 }).catch(err => {
                     console.error(err);
                     alert('健康推荐失败，请稍后再试');
@@ -419,7 +424,85 @@
             viewButton.href = `/recipe/${recipe.id}/`;
             
             return card;
+}
+
+// 创建组合菜谱卡片：一菜一汤 / 一菜一凉菜
+function createComboCard(combo) {
+    const { main, side, total_calories } = combo;
+    const card = document.createElement('div');
+    card.className = 'recipe-card combo-card';
+
+    // 图片：优先主菜
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'recipe-image';
+    const img = document.createElement('img');
+    img.src = main.image_url || side.image_url || '';
+    img.alt = `${main.title} + ${side.title}`;
+    imgWrap.appendChild(img);
+    card.appendChild(imgWrap);
+
+    // 信息区域
+    const info = document.createElement('div');
+    info.className = 'recipe-info';
+
+    // 标题
+    const h3 = document.createElement('h3');
+    h3.className = 'recipe-title';
+    h3.textContent = `${main.title} + ${side.title}`;
+    info.appendChild(h3);
+
+    // 元信息：热量
+    const meta = document.createElement('div');
+    meta.className = 'recipe-meta';
+    meta.innerHTML = `<div class="meta-item"><i class="fas fa-fire"></i><span>${total_calories} kcal</span></div>`;
+    info.appendChild(meta);
+
+    // 两道菜食材分别展示
+    const buildPart = (part) => {
+        const partDiv = document.createElement('div');
+        partDiv.className = 'combo-part';
+
+        const ingList = document.createElement('ul');
+        ingList.className = 'ingredients-list';
+        (part.ingredients || []).forEach(ing => {
+            const li = document.createElement('li');
+            if (ing.is_match === false) {
+                li.innerHTML = `<span class="ingredient-extra">${ing.name}</span> ${ing.amount || ''}`;
+            } else if (ing.is_match) {
+                li.innerHTML = `<span class="ingredient-match">${ing.name}</span> ${ing.amount || ''}`;
+            } else {
+                li.textContent = `${ing.name} ${ing.amount || ''}`;
+            }
+            ingList.appendChild(li);
+        });
+
+        const link = document.createElement('a');
+        link.className = 'view-recipe-btn';
+        if (part.id && !(part.title && part.title.includes('AI生成'))) {
+            link.href = `/recipe/${part.id}/`;
+            link.innerHTML = `<i class="fas fa-book-open"></i> 查看${part.title}`;
+        } else {
+            link.href = 'javascript:void(0)';
+            link.style.cursor = 'default';
+            link.innerHTML = `<i class="fas fa-robot"></i> AI生成`;
         }
+
+        partDiv.appendChild(ingList);
+        partDiv.appendChild(link);
+        return partDiv;
+    };
+
+        const partsWrap = document.createElement('div');
+    partsWrap.className = 'combo-parts';
+    partsWrap.appendChild(buildPart(main));
+    partsWrap.appendChild(buildPart(side));
+    info.appendChild(partsWrap);
+
+
+    card.appendChild(info);
+    return card;
+}
+
     });
 </script>
 {% endblock %} 

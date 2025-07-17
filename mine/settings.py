@@ -140,3 +140,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Route recommender app to recommend database
 DATABASE_ROUTERS = ['mine.db_router.RecommendRouter']
+

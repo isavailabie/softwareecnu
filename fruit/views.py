@@ -301,6 +301,7 @@ def my_view(request):
             
             # 获取推荐热量
             recommended_calories = profile.get_recommended_calories()
+            daily_target = int(data.get('daily_target') or recommended_calories)
             
             # 获取或创建今日记录
             record, created = UserCalorieRecord.objects.get_or_create(
@@ -313,7 +314,7 @@ def my_view(request):
                     'lunch_calories': lunch_calories,
                     'dinner_food': dinner_food,
                     'dinner_calories': dinner_calories,
-                    'daily_target': recommended_calories
+                    'daily_target': daily_target
                 }
             )
             
@@ -325,6 +326,7 @@ def my_view(request):
                 record.lunch_calories = lunch_calories
                 record.dinner_food = dinner_food
                 record.dinner_calories = dinner_calories
+                record.daily_target = daily_target
                 record.save()
             
             # 返回成功响应
@@ -490,20 +492,125 @@ def edit_calorie_record(request, record_id):
 # 菜谱页面
 @login_required
 def recipe_view(request):
-    # 获取推荐菜谱和热门菜谱
-    popular_recipes = Recipe.objects.filter(is_popular=True)[:3]
-    healthy_recipes = Recipe.objects.filter(is_healthy=True)[:3]
-    
+    """菜谱首页：改为使用 recommender_recipeflat (RecipeFlat) 数据表。\n\n    1. 热门菜谱：按照 rating_sum 排序，取前 3 条。\n    2. 健康菜谱：按照热量（calories）字段数值从低到高排序，取前 3 条。\n       calories 字段示例："205大卡/100g" → 205。未解析成功的行将被忽略。\n    """
+    # 1. 热门菜谱 – 根据评分总和从高到低排序
+    popular_recipes = RecipeFlat.objects.order_by('-rating_sum')[:3]
+
+    # 2. 健康菜谱 – 根据每 100g 热量由低到高排序
+    def calorie_value(recipe):
+        """提取换算后的整数热量值，用于排序。无法解析时返回较大默认值。"""
+        if not recipe.calories:
+            return 10 ** 9  # 无热量信息排到最后
+        # 提取数字部分，如 "205大卡/100g" → 205
+        import re
+        match = re.search(r'(\d+)', recipe.calories)
+        if match:
+            try:
+                return int(match.group(1))
+            except ValueError:
+                pass
+        return 10 ** 9
+
+    healthy_recipes = sorted(RecipeFlat.objects.all(), key=calorie_value)[:3]
+
     context = {
         'popular_recipes': popular_recipes,
-        'healthy_recipes': healthy_recipes
+        'healthy_recipes': healthy_recipes,
     }
-    
+
     return render(request, 'fruit/recipe.html', context)
 
 # 菜谱推荐API
 @login_required
 def recommend_recipes(request):
+    """根据用户输入食材推荐菜谱（改为使用 RecipeFlat 单表）。
+
+    返回字段保持前端兼容：
+        - cooking_time 字段来自 RecipeFlat.cook_time
+        - ingredients 为 list[{name, amount, is_match}]
+    """
+    if request.method == 'POST':
+        # 1. 收集用户输入的 1~5 种食材，转成小写便于比较
+        ingredients = [
+            request.POST.get(f'ingredient{i}', '').strip().lower()
+            for i in range(1, 6)
+        ]
+        ingredients = [ing for ing in ingredients if ing]
+
+        if not ingredients:
+            return JsonResponse({'success': False, 'message': '请至少输入一种食材'})
+
+        # 2. 从 RecipeFlat 中获取所有菜谱，后续在应用层过滤
+        candidate_recipes = RecipeFlat.objects.all()
+
+        matching_recipes = []
+        CONDIMENTS_LOWER = {c.lower() for c in CONDIMENTS}
+
+        import re
+
+        def time_value(t):
+            """提取烹饪时间中的数字，无法解析时返回较大值。"""
+            if not t:
+                return 10 ** 9
+            m = re.search(r'(\d+)', str(t))
+            return int(m.group(1)) if m else 10 ** 9
+
+        for recipe in candidate_recipes:
+            # 当前菜谱原始食材（JSON list[{name, amount}]）
+            ing_items = recipe.ingredients or []
+            recipe_ing_names = [
+                (item.get('name') or '').strip() for item in ing_items
+            ]
+            # 过滤调味料与空值
+            recipe_ing_names = [
+                n for n in recipe_ing_names
+                if n and n.lower() not in CONDIMENTS_LOWER
+            ]
+            if not recipe_ing_names:
+                continue
+
+            # 3. 计算匹配度
+            matched_names_lower = {
+                ing for ing in ingredients if ing in {n.lower() for n in recipe_ing_names}
+            }
+            if not matched_names_lower:
+                continue
+
+            match_percentage = len(matched_names_lower) / len(recipe_ing_names) * 100
+            needs_extra = len(matched_names_lower) < len(recipe_ing_names)
+
+            # 4. 组装食材列表，标注是否匹配
+            ing_list = []
+            for item in ing_items:
+                name = (item.get('name') or '').strip()
+                if not name or name.lower() in CONDIMENTS_LOWER:
+                    continue
+                ing_list.append({
+                    'name': name,
+                    'amount': item.get('amount', ''),
+                    'is_match': name.lower() in matched_names_lower
+                })
+
+            # 5. 组装菜谱数据
+            matching_recipes.append({
+                'id': recipe.id,
+                'title': recipe.title,
+                'cooking_time': recipe.cook_time,
+                'difficulty': recipe.difficulty,
+                'image_url': recipe.image_url or recipe.image_path,
+                'match_percentage': int(match_percentage),
+                'needs_extra': needs_extra,
+                'ingredients': ing_list
+            })
+
+        # 6. 排序：匹配度(降序) → 烹饪时间(升序)
+        matching_recipes.sort(
+            key=lambda x: (-x['match_percentage'], time_value(x['cooking_time']))
+        )
+
+        return JsonResponse({'success': True, 'recipes': matching_recipes})
+
+    return JsonResponse({'success': False, 'message': '请求方法不正确'})
     if request.method == 'POST':
         # 获取用户输入的食材
         ingredients = []

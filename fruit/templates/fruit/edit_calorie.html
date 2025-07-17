@@ -1,0 +1,207 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑热量记录 - 饭了么</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'fruit/my.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <div class="nav-container">
+                <div class="logo">
+                    <i class="fas fa-carrot"></i> 饭了么
+                </div>
+                
+                <div class="nav-links">
+                    <a href="/recipe/">食谱</a>
+                    <a href="/">商城</a>
+                    <a href="/my-fridge/">冰箱</a>
+                    <a href="/my/" style="color: var(--primary-color);">我的</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'logout_view' %}"><i class="fas fa-sign-out-alt"></i> 退出</a>
+                    {% endif %}
+                </div>
+                
+                <div class="search-container">
+                    <input type="text" placeholder="搜索健康食谱...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- 编辑表单 -->
+        <div class="edit-form-container">
+            <div class="form-title">
+                <i class="fas fa-edit"></i>
+                <h3>编辑热量记录 - {{ record.date|date:"Y年m月d日" }}</h3>
+            </div>
+            
+            <form method="post" action="{% url 'edit_calorie_record' record.id %}" class="calorie-form">
+                {% csrf_token %}
+                
+                <!-- 早餐部分 -->
+                <div class="meal-section">
+                    <div class="meal-header">
+                        <i class="fas fa-sun"></i>
+                        <h4>早餐</h4>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="breakfast-food">食物名称</label>
+                        <input type="text" id="breakfast-food" name="breakfast_food" class="form-control" 
+                               placeholder="例如：全麦面包 + 牛奶" value="{{ record.breakfast_food }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="breakfast-calories">热量（千卡）</label>
+                        <input type="number" id="breakfast-calories" name="breakfast_calories" class="form-control" 
+                               placeholder="输入热量值" value="{{ record.breakfast_calories }}">
+                    </div>
+                    
+                    <div class="meal-total" id="breakfast-total">早餐总计: {{ record.breakfast_calories }} 千卡</div>
+                </div>
+                
+                <!-- 午餐部分 -->
+                <div class="meal-section">
+                    <div class="meal-header">
+                        <i class="fas fa-cloud-sun"></i>
+                        <h4>午餐</h4>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lunch-food">食物名称</label>
+                        <input type="text" id="lunch-food" name="lunch_food" class="form-control" 
+                               placeholder="例如：番茄鸡胸肉" value="{{ record.lunch_food }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lunch-calories">热量（千卡）</label>
+                        <input type="number" id="lunch-calories" name="lunch_calories" class="form-control" 
+                               placeholder="输入热量值" value="{{ record.lunch_calories }}">
+                    </div>
+                    
+                    <div class="meal-total" id="lunch-total">午餐总计: {{ record.lunch_calories }} 千卡</div>
+                </div>
+                
+                <!-- 晚餐部分 -->
+                <div class="meal-section">
+                    <div class="meal-header">
+                        <i class="fas fa-moon"></i>
+                        <h4>晚餐</h4>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dinner-food">食物名称</label>
+                        <input type="text" id="dinner-food" name="dinner_food" class="form-control" 
+                               placeholder="例如：蔬菜沙拉" value="{{ record.dinner_food }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dinner-calories">热量（千卡）</label>
+                        <input type="number" id="dinner-calories" name="dinner_calories" class="form-control" 
+                               placeholder="输入热量值" value="{{ record.dinner_calories }}">
+                    </div>
+                    
+                    <div class="meal-total" id="dinner-total">晚餐总计: {{ record.dinner_calories }} 千卡</div>
+                </div>
+                
+                <div class="daily-total">
+                    总摄入: <span id="daily-total-calories">{{ record.total_calories }}</span> 千卡
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{% url 'my_view' %}" class="btn btn-outline">
+                        <i class="fas fa-times"></i> 取消
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存更改
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>关于我们</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">公司简介</a></li>
+                        <li><a href="#">品牌故事</a></li>
+                        <li><a href="#">团队介绍</a></li>
+                        <li><a href="#">招贤纳士</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>客户服务</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">售后服务</a></li>
+                        <li><a href="#">配送说明</a></li>
+                        <li><a href="#">退换政策</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>商务合作</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">供应商入驻</a></li>
+                        <li><a href="#">广告合作</a></li>
+                        <li><a href="#">渠道合作</a></li>
+                        <li><a href="#">企业采购</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>关注我们</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fab fa-weixin"></i> 微信公众号</a></li>
+                        <li><a href="#"><i class="fab fa-weibo"></i> 新浪微博</a></li>
+                        <li><a href="#"><i class="fab fa-tiktok"></i> 抖音</a></li>
+                        <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2025 饭了么 - 健康食材商城 | 让新鲜食材直达您的厨房</p>
+            </div>
+        </footer>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取表单元素
+            const breakfastCalories = document.getElementById('breakfast-calories');
+            const lunchCalories = document.getElementById('lunch-calories');
+            const dinnerCalories = document.getElementById('dinner-calories');
+            const dailyTotal = document.getElementById('daily-total-calories');
+            
+            // 为每个热量输入框添加事件监听器
+            breakfastCalories.addEventListener('input', updateTotalCalories);
+            lunchCalories.addEventListener('input', updateTotalCalories);
+            dinnerCalories.addEventListener('input', updateTotalCalories);
+            
+            // 更新总热量函数
+            function updateTotalCalories() {
+                const breakfast = parseInt(breakfastCalories.value) || 0;
+                const lunch = parseInt(lunchCalories.value) || 0;
+                const dinner = parseInt(dinnerCalories.value) || 0;
+                const total = breakfast + lunch + dinner;
+                
+                // 更新显示
+                document.getElementById('breakfast-total').textContent = `早餐总计: ${breakfast} 千卡`;
+                document.getElementById('lunch-total').textContent = `午餐总计: ${lunch} 千卡`;
+                document.getElementById('dinner-total').textContent = `晚餐总计: ${dinner} 千卡`;
+                dailyTotal.textContent = total;
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -4,8 +4,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import CartItem, Recipe, Ingredient, RecipeIngredient, FavoriteIngredient, FridgeItem
+from .models import CartItem, Recipe, Ingredient, RecipeIngredient, FavoriteIngredient, FridgeItem, UserCalorieRecord, UserProfile
+from django.utils import timezone
 from recommender.models import RecipeFlat
+import datetime
+import json
 
 import os
 import base64
@@ -232,12 +235,257 @@ def fridge_view(request):
     return render(request, 'fruit/fridge.html', {'items': items})
 
 # 我的页面
-
+@login_required
 def my_view(request):
-    if not request.user.is_authenticated:
-        return redirect('login_view')
+    # 获取当前日期
+    today = timezone.now().date()
     
-    return render(request, 'fruit/my.html')
+    # 获取或创建用户个人资料
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    # 如果是POST请求，处理表单提交
+    if request.method == 'POST':
+        # 检查是否是个人信息表单
+        if 'update_profile' in request.POST:
+            # 更新个人信息
+            try:
+                height = int(request.POST.get('height', 0)) or None
+                weight = float(request.POST.get('weight', 0)) or None
+                gender = request.POST.get('gender', '')
+                activity_level = request.POST.get('activity_level', 'II')
+                birth_date_str = request.POST.get('birth_date', '')
+                
+                profile.height = height
+                profile.weight = weight
+                profile.gender = gender if gender else None
+                profile.activity_level = activity_level
+                
+                # 处理生日
+                if birth_date_str:
+                    try:
+                        birth_date = datetime.datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+                        profile.birth_date = birth_date
+                    except ValueError:
+                        messages.error(request, '生日格式无效，请使用YYYY-MM-DD格式')
+                
+                profile.save()
+                
+                # 更新用户的热量目标
+                recommended_calories = profile.get_recommended_calories()
+                
+                # 更新今日记录的热量目标（如果存在）
+                try:
+                    today_record = UserCalorieRecord.objects.get(user=request.user, date=today)
+                    today_record.daily_target = recommended_calories
+                    today_record.save()
+                except UserCalorieRecord.DoesNotExist:
+                    pass
+                
+                messages.success(request, '个人信息已更新！')
+                return redirect('my_view')
+            except (ValueError, TypeError) as e:
+                messages.error(request, f'更新个人信息失败: {str(e)}')
+                return redirect('my_view')
+        
+        # 检查是AJAX请求还是表单提交
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            # 处理AJAX请求
+            data = json.loads(request.body)
+            
+            breakfast_food = data.get('breakfast_food', '')
+            breakfast_calories = int(data.get('breakfast_calories', 0))
+            lunch_food = data.get('lunch_food', '')
+            lunch_calories = int(data.get('lunch_calories', 0))
+            dinner_food = data.get('dinner_food', '')
+            dinner_calories = int(data.get('dinner_calories', 0))
+            
+            # 获取推荐热量
+            recommended_calories = profile.get_recommended_calories()
+            
+            # 获取或创建今日记录
+            record, created = UserCalorieRecord.objects.get_or_create(
+                user=request.user,
+                date=today,
+                defaults={
+                    'breakfast_food': breakfast_food,
+                    'breakfast_calories': breakfast_calories,
+                    'lunch_food': lunch_food,
+                    'lunch_calories': lunch_calories,
+                    'dinner_food': dinner_food,
+                    'dinner_calories': dinner_calories,
+                    'daily_target': recommended_calories
+                }
+            )
+            
+            # 如果记录已存在，则更新
+            if not created:
+                record.breakfast_food = breakfast_food
+                record.breakfast_calories = breakfast_calories
+                record.lunch_food = lunch_food
+                record.lunch_calories = lunch_calories
+                record.dinner_food = dinner_food
+                record.dinner_calories = dinner_calories
+                record.save()
+            
+            # 返回成功响应
+            return JsonResponse({
+                'success': True,
+                'total': record.total_calories,
+                'remaining': record.remaining_calories,
+                'percentage': record.completion_percentage,
+                'status': record.status
+            })
+        else:
+            # 处理常规表单提交
+            breakfast_food = request.POST.get('breakfast_food', '')
+            breakfast_calories = int(request.POST.get('breakfast_calories', 0))
+            lunch_food = request.POST.get('lunch_food', '')
+            lunch_calories = int(request.POST.get('lunch_calories', 0))
+            dinner_food = request.POST.get('dinner_food', '')
+            dinner_calories = int(request.POST.get('dinner_calories', 0))
+            
+            # 获取推荐热量
+            recommended_calories = profile.get_recommended_calories()
+            
+            # 获取或创建今日记录
+            record, created = UserCalorieRecord.objects.get_or_create(
+                user=request.user,
+                date=today,
+                defaults={
+                    'breakfast_food': breakfast_food,
+                    'breakfast_calories': breakfast_calories,
+                    'lunch_food': lunch_food,
+                    'lunch_calories': lunch_calories,
+                    'dinner_food': dinner_food,
+                    'dinner_calories': dinner_calories,
+                    'daily_target': recommended_calories
+                }
+            )
+            
+            # 如果记录已存在，则更新
+            if not created:
+                record.breakfast_food = breakfast_food
+                record.breakfast_calories = breakfast_calories
+                record.lunch_food = lunch_food
+                record.lunch_calories = lunch_calories
+                record.dinner_food = dinner_food
+                record.dinner_calories = dinner_calories
+                record.save()
+            
+            messages.success(request, '热量记录已保存！')
+            return redirect('my_view')
+    
+    # 获取今日记录（如果存在）
+    try:
+        today_record = UserCalorieRecord.objects.get(user=request.user, date=today)
+    except UserCalorieRecord.DoesNotExist:
+        today_record = None
+    
+    # 获取历史记录（最近7天）
+    end_date = today
+    start_date = end_date - datetime.timedelta(days=6)
+    history_records = UserCalorieRecord.objects.filter(
+        user=request.user,
+        date__range=[start_date, end_date]
+    ).order_by('-date')
+    
+    # 准备图表数据
+    chart_data = {
+        'week': {
+            'labels': [],
+            'data': []
+        },
+        'last-week': {
+            'labels': [],
+            'data': []
+        },
+        'month': {
+            'labels': [],
+            'data': []
+        }
+    }
+    
+    # 本周数据
+    current_date = today
+    for i in range(6, -1, -1):
+        date = current_date - datetime.timedelta(days=i)
+        weekday = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][date.weekday()]
+        chart_data['week']['labels'].append(weekday)
+        
+        try:
+            record = UserCalorieRecord.objects.get(user=request.user, date=date)
+            chart_data['week']['data'].append(record.total_calories)
+        except UserCalorieRecord.DoesNotExist:
+            chart_data['week']['data'].append(0)
+    
+    # 上周数据
+    for i in range(13, 6, -1):
+        date = current_date - datetime.timedelta(days=i)
+        weekday = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][date.weekday()]
+        chart_data['last-week']['labels'].append(weekday)
+        
+        try:
+            record = UserCalorieRecord.objects.get(user=request.user, date=date)
+            chart_data['last-week']['data'].append(record.total_calories)
+        except UserCalorieRecord.DoesNotExist:
+            chart_data['last-week']['data'].append(0)
+    
+    # 本月数据（按周）
+    # 简化处理，每7天为一周
+    for i in range(4):
+        start = current_date - datetime.timedelta(days=(i+1)*7-1)
+        end = current_date - datetime.timedelta(days=i*7)
+        chart_data['month']['labels'].append(f'第{4-i}周')
+        
+        week_records = UserCalorieRecord.objects.filter(
+            user=request.user,
+            date__range=[start, end]
+        )
+        if week_records.exists():
+            total = sum(record.total_calories for record in week_records)
+            chart_data['month']['data'].append(total)
+        else:
+            chart_data['month']['data'].append(0)
+    
+    chart_data['month']['labels'].reverse()
+    chart_data['month']['data'].reverse()
+    
+    # 获取推荐热量
+    recommended_calories = profile.get_recommended_calories()
+    
+    context = {
+        'today_record': today_record,
+        'history_records': history_records,
+        'chart_data': json.dumps(chart_data),
+        'today_date': today.strftime('%Y年%m月%d日'),
+        'profile': profile,
+        'recommended_calories': recommended_calories
+    }
+    
+    return render(request, 'fruit/my.html', context)
+
+# 编辑历史热量记录
+@login_required
+def edit_calorie_record(request, record_id):
+    record = get_object_or_404(UserCalorieRecord, id=record_id, user=request.user)
+    
+    if request.method == 'POST':
+        record.breakfast_food = request.POST.get('breakfast_food', '')
+        record.breakfast_calories = int(request.POST.get('breakfast_calories', 0))
+        record.lunch_food = request.POST.get('lunch_food', '')
+        record.lunch_calories = int(request.POST.get('lunch_calories', 0))
+        record.dinner_food = request.POST.get('dinner_food', '')
+        record.dinner_calories = int(request.POST.get('dinner_calories', 0))
+        record.save()
+        
+        messages.success(request, '记录已更新！')
+        return redirect('my_view')
+    
+    context = {
+        'record': record
+    }
+    
+    return render(request, 'fruit/edit_calorie.html', context)
 
 # 菜谱页面
 @login_required

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'fruit/store.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+<<<<<<< HEAD
         .fridge-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -223,6 +224,179 @@
             transform: scale(1.1);
             background: #ff5252;
         }
+=======
+    /* 统一风格 */
+    :root {
+        --primary-color: #ff6b6b;
+        --secondary-color: #4ecdc4;
+        --text-color: #333;
+        --light-gray: #f8f9fa;
+        --border-radius: 10px;
+        --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text-color);
+        background-color: #f9fbfd;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+    
+    /* 冰箱内容区域 */
+    .fridge-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 25px;
+        margin: 30px 0;
+    }
+    
+    .fridge-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+    }
+    
+    .fridge-header h2 {
+        color: var(--primary-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+    }
+    
+    .fridge-btn {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        box-shadow: 0 4px 8px rgba(255, 107, 107, 0.25);
+    }
+    
+    .fridge-btn:hover {
+        background: #ff5252;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(255, 107, 107, 0.3);
+    }
+    
+    /* 冰箱物品列表 */
+    .fridge-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .fridge-item {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+        border-left: 4px solid var(--secondary-color);
+    }
+    
+    .fridge-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    
+    .item-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(78, 205, 196, 0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 20px;
+        color: var(--secondary-color);
+    }
+    
+    .item-info {
+        flex: 1;
+    }
+    
+    .item-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--text-color);
+    }
+    
+    .item-meta {
+        display: flex;
+        justify-content: space-between;
+        color: #777;
+        font-size: 14px;
+    }
+    
+    .item-quantity {
+        background: var(--light-gray);
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    
+    /* 空状态 */
+    .empty-fridge {
+        text-align: center;
+        padding: 50px 20px;
+    }
+    
+    .empty-icon {
+        font-size: 80px;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+    
+    .empty-text {
+        color: #777;
+        margin-bottom: 25px;
+        font-size: 18px;
+    }
+    
+    /* 悬浮购物车按钮 */
+    .floating-cart {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        cursor: pointer;
+        z-index: 99;
+        font-size: 24px;
+        transition: transform 0.3s, background 0.3s;
+    }
+    
+    .floating-cart:hover {
+        transform: scale(1.1);
+        background: #ff5252;
+    }
+>>>>>>> 2a3253006a2f298661d9ec0bb95bcbccb8319da1
     </style>
 </head>
 <body>
@@ -235,20 +409,31 @@
                 </div>
                 <div class="nav-links">
                     <a href="/recipe/">食谱</a>
+<<<<<<< HEAD
                     <a href="/">商城</a>
                     <a href="/my-fridge/" style="color: var(--primary-color);">冰箱</a>
                     <a href="/my/" id="my-btn"><i class="fas fa-user"></i> 我的</a>
+=======
+                    <a href="{% url 'product_list' %}">商城</a>
+                    <a href="/my-fridge/" style="color: var(--primary-color);">冰箱</a>
+                    <a href="{% url 'my_view' %}">我的</a>
+>>>>>>> 2a3253006a2f298661d9ec0bb95bcbccb8319da1
                     {% if user.is_authenticated %}
                     <a href="{% url 'logout_view' %}"><i class="fas fa-sign-out-alt"></i> 退出</a>
                     {% endif %}
                 </div>
                 <div class="search-container">
+<<<<<<< HEAD
                     <input type="text" placeholder="搜索食材...">
+=======
+                    <input type="text" placeholder="搜索新鲜食材...">
+>>>>>>> 2a3253006a2f298661d9ec0bb95bcbccb8319da1
                     <button><i class="fas fa-search"></i></button>
                 </div>
             </div>
         </header>
         
+<<<<<<< HEAD
         <!-- 冰箱内容 -->
         <div class="fridge-container">
             <div class="fridge-header">
@@ -263,11 +448,21 @@
                         <i class="fas fa-camera"></i> 识别食材
                     </a>
                 </div>
+=======
+        <!-- 冰箱内容区域 -->
+        <div class="fridge-container">
+            <div class="fridge-header">
+                <h2><i class="fas fa-ice-cream"></i> 我的冰箱</h2>
+                <a class="fridge-btn" href="{% url 'recognize_fruit' %}">
+                    <i class="fas fa-camera"></i> 食材识别
+                </a>
+>>>>>>> 2a3253006a2f298661d9ec0bb95bcbccb8319da1
             </div>
             
             {% if items %}
             <div class="fridge-list">
                 {% for item in items %}
+<<<<<<< HEAD
                 <div class="fridge-item" data-id="{{ item.id }}">
                     <div class="fridge-item-info">
                         <i class="fas fa-leaf fridge-item-icon"></i>
@@ -282,12 +477,25 @@
                         <button class="btn btn-danger btn-sm delete-item-btn" data-id="{{ item.id }}">
                             <i class="fas fa-trash"></i> 删除
                         </button>
+=======
+                <div class="fridge-item">
+                    <div class="item-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">{{ item.name }}</div>
+                        <div class="item-meta">
+                            <span class="item-date">{{ item.created_at|date:"Y-m-d" }}</span>
+                            <span class="item-quantity">x{{ item.quantity }}</span>
+                        </div>
+>>>>>>> 2a3253006a2f298661d9ec0bb95bcbccb8319da1
                     </div>
                 </div>
                 {% endfor %}
             </div>
             {% else %}
             <div class="empty-fridge">
+<<<<<<< HEAD
                 <i class="fas fa-ice-cream"></i>
                 <p>您的冰箱空空如也，快去识别或添加食材吧！</p>
                 <div class="fridge-actions" style="justify-content: center;">
@@ -298,6 +506,15 @@
                         <i class="fas fa-camera"></i> 识别食材
                     </a>
                 </div>
+=======
+                <div class="empty-icon">
+                    <i class="fas fa-ice-cream"></i>
+                </div>
+                <p class="empty-text">您的冰箱空空如也，快去添加食材吧！</p>
+                <a class="fridge-btn" href="{% url 'recognize_fruit' %}">
+                    <i class="fas fa-camera"></i> 识别食材
+                </a>
+>>>>>>> 2a3253006a2f298661d9ec0bb95bcbccb8319da1
             </div>
             {% endif %}
         </div>
@@ -348,6 +565,7 @@
         </footer>
     </div>
     
+<<<<<<< HEAD
     <!-- 悬浮识别按钮 -->
     <a href="{% url 'recognize_fruit' %}" class="floating-recognize" title="识别食材">
         <i class="fas fa-camera"></i>
@@ -591,3 +809,13 @@
     </script>
 </body>
 </html>
+=======
+    <!-- 悬浮购物车按钮 -->
+    <a href="/cart/" class="floating-cart" title="查看购物车">
+        <i class="fas fa-shopping-cart"></i>
+    </a>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+</html>
+>>>>>>> 2a3253006a2f298661d9ec0bb95bcbccb8319da1

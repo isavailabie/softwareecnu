@@ -211,7 +211,7 @@ def add_to_fridge(request):
 
     name = request.POST.get('name', '').strip()
     quantity = int(request.POST.get('quantity', 1))
-    source = request.POST.get('source', 'recognized')
+    source = request.POST.get('source', 'manual')  # 默认为手动添加
 
     if not name:
         return JsonResponse({'success': False, 'error': '名称不能为空'})
@@ -229,9 +229,47 @@ def add_to_fridge(request):
 
 
 @login_required
+def update_fridge_item(request, item_id):
+    """更新冰箱中的食材 (AJAX POST)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '请求方法错误'})
+    
+    try:
+        item = FridgeItem.objects.get(id=item_id, user=request.user)
+    except FridgeItem.DoesNotExist:
+        return JsonResponse({'success': False, 'error': '食材不存在'})
+    
+    name = request.POST.get('name', '').strip()
+    quantity = int(request.POST.get('quantity', 1))
+    
+    if not name:
+        return JsonResponse({'success': False, 'error': '名称不能为空'})
+    
+    item.name = name
+    item.quantity = quantity
+    item.save()
+    
+    return JsonResponse({'success': True})
+
+
+@login_required
+def delete_fridge_item(request, item_id):
+    """删除冰箱中的食材 (AJAX POST)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '请求方法错误'})
+    
+    try:
+        item = FridgeItem.objects.get(id=item_id, user=request.user)
+        item.delete()
+        return JsonResponse({'success': True})
+    except FridgeItem.DoesNotExist:
+        return JsonResponse({'success': False, 'error': '食材不存在'})
+
+
+@login_required
 def fridge_view(request):
     """冰箱页面，显示所有食材"""
-    items = FridgeItem.objects.filter(user=request.user)
+    items = FridgeItem.objects.filter(user=request.user).order_by('-added_at')
     return render(request, 'fruit/fridge.html', {'items': items})
 
 # 我的页面
@@ -512,12 +550,12 @@ def recipe_view(request):
         return 10 ** 9
 
     healthy_recipes = sorted(RecipeFlat.objects.all(), key=calorie_value)[:3]
-
+    
     context = {
         'popular_recipes': popular_recipes,
         'healthy_recipes': healthy_recipes,
     }
-
+    
     return render(request, 'fruit/recipe.html', context)
 
 # 菜谱推荐API
@@ -706,10 +744,10 @@ def recipe_detail(request, recipe_id):
         for i, step_text in enumerate(str(recipe.steps).split('\n')):
             if step_text.strip():
                 steps.append({
-                    'number': i + 1,
-                    'title': f"步骤 {i + 1}",
-                    'description': step_text.strip(),
-                    'tip': ''
+                'number': i + 1,
+                'title': f"步骤 {i + 1}",
+                'description': step_text.strip(),
+                'tip': ''
                 })
 
     # 营养信息

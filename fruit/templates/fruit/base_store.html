@@ -21,7 +21,7 @@
                     <a href="/" {% if request.path == '/' %}style="color: var(--primary-color);"{% endif %}>商城</a>
                     <a href="{% url 'cart_view' %}" {% if 'cart' in request.path %}style="color: var(--primary-color);"{% endif %}>购物车</a>
                     <a href="{% url 'recognize_fruit' %}" {% if 'recognize' in request.path %}style="color: var(--primary-color);"{% endif %}>果蔬识别</a>
-                    <a href="{% url 'fridge_view' %}" {% if 'my-fridge' in request.path %}style="color: var(--primary-color);"{% endif %}>冰箱</a>
+                    <a href="{% url 'fridge_view' %}" {% if 'fridge' in request.path %}style="color: var(--primary-color);"{% endif %}>冰箱</a>
                 </div>
             </div>
         </header>

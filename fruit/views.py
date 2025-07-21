@@ -983,3 +983,39 @@ def recognize_ingredient(cropped_image, crop_index, api_url, access_token):
             if item["name"] != "非果蔬食材":
                 return item["name"], item["score"]
     return None, 0
+
+@login_required
+def update_fridge_item(request, item_id):
+    """更新冰箱中的食材 (AJAX POST)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '请求方法错误'})
+    
+    try:
+        item = FridgeItem.objects.get(id=item_id, user=request.user)
+    except FridgeItem.DoesNotExist:
+        return JsonResponse({'success': False, 'error': '食材不存在'})
+    
+    name = request.POST.get('name', '').strip()
+    quantity = int(request.POST.get('quantity', 1))
+    
+    if not name:
+        return JsonResponse({'success': False, 'error': '名称不能为空'})
+    
+    item.name = name
+    item.quantity = quantity
+    item.save()
+    
+    return JsonResponse({'success': True})
+
+@login_required
+def delete_fridge_item(request, item_id):
+    """删除冰箱中的食材 (AJAX POST)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '请求方法错误'})
+    
+    try:
+        item = FridgeItem.objects.get(id=item_id, user=request.user)
+        item.delete()
+        return JsonResponse({'success': True})
+    except FridgeItem.DoesNotExist:
+        return JsonResponse({'success': False, 'error': '食材不存在'})

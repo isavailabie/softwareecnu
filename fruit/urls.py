@@ -24,4 +24,7 @@ urlpatterns = [
     path('check-favorite/', views.check_favorite_status, name='check_favorite_status'),
     path('add-to-fridge/', views.add_to_fridge, name='add_to_fridge'),
     path('my-fridge/', views.fridge_view, name='fridge_view'),
+    path('update-fridge-item/<int:item_id>/', views.update_fridge_item, name='update_fridge_item'),
+    path('delete-fridge-item/<int:item_id>/', views.delete_fridge_item, name='delete_fridge_item'),
+    path('healthy-recommend/', views.healthy_recommend, name='healthy_recommend'),
 ]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -16,6 +16,7 @@
     --accent-color: #ffd166;
     --sale-color: #e74c3c;
     --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    --healthy: #eca63c;
 }
 
 body {
@@ -244,6 +245,31 @@ body {
 
 .btn-outline:hover {
     background: rgba(255, 107, 107, 0.1);
+}
+
+/* 健康推荐按钮容器 */
+.healthy-recommend-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.btn-green {
+    background: var(--healthy); /* 添加背景色 */
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-block; /* 确保按钮正确显示 */
+    text-align: center; /* 文字居中 */
+}
+
+.btn-green:hover {
+    background: #eca63c;
+    transform: translateY(-2px);
 }
 
 .filter-option {

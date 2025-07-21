@@ -419,9 +419,10 @@
                 ingredientsList.appendChild(li);
             });
             
-            // 设置详情链接
+            // 设置详情链接，根据是否 AI 菜谱切换 URL
             const viewButton = card.querySelector('.view-recipe-btn');
-            viewButton.href = `/recipe/${recipe.id}/`;
+            const isAI = recipe.match_percentage === 'AI' || (recipe.title && recipe.title.includes('AI生成'));
+            viewButton.href = isAI ? `/ai_recipe/${recipe.id}/` : `/recipe/${recipe.id}/`;
             
             return card;
 }
@@ -478,8 +479,9 @@ function createComboCard(combo) {
 
         const link = document.createElement('a');
         link.className = 'view-recipe-btn';
-        if (part.id && !(part.title && part.title.includes('AI生成'))) {
-            link.href = `/recipe/${part.id}/`;
+        if (part.id) {
+            const isAI = part.is_ai || (part.title && part.title.includes('AI生成'));
+            link.href = isAI ? `/ai_recipe/${part.id}/` : `/recipe/${part.id}/`;
             link.innerHTML = `<i class="fas fa-book-open"></i> 查看${part.title}`;
         } else {
             link.href = 'javascript:void(0)';

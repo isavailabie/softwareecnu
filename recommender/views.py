@@ -9,7 +9,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import Recipe, RecipeFlat, EnergyRequirement, ProteinRequirement
 from django.utils import timezone
-import datetime, re, random, os, requests
+import datetime, re, random, os, requests, base64, uuid
+from django.conf import settings
 
 
 def _score_recipe(recipe: RecipeFlat, provided: set, target_calories: float) -> float:
@@ -184,6 +185,8 @@ def recommend_view(request: HttpRequest):
             "cook_time": r.cook_time,
             "difficulty": r.difficulty,
             "ingredients": r.ingredients,
+            "nutrition": getattr(r, "nutrition", None),
+            "description": getattr(r, "description", ""),
         }
 
     local_combos = [
@@ -197,14 +200,102 @@ def recommend_view(request: HttpRequest):
     ]
 
     # ---------------- AI 组合补充 ----------------
+    def _generate_image(title: str) -> str:
+        """调用 ChatECNU image API 生成菜谱封面，返回图片 URL，失败时返回空字符串。
+
+        优先返回接口中的 ``url`` 字段；若仅返回 ``b64_json``，
+        则保存到 ``MEDIA_ROOT/recipes`` 并返回对应 ``MEDIA_URL``。
+        """
+        api_key = os.getenv("CHATECNU_API_KEY")
+        if not api_key:
+            return ""
+
+        payload = {
+            "prompt": title,
+            "model": "ecnu-image",
+            "size": "512x512",
+        }
+        try:
+            resp = requests.post(
+                "https://chat.ecnu.edu.cn/open/api/v1/images/generations",
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}",
+                },
+                json=payload,
+                timeout=30,
+            )
+            if resp.status_code != 200:
+                print(f"[Recommend] image API http={resp.status_code}: {resp.text[:400]}")
+                return ""
+
+            data = resp.json().get("data", [])
+            if not data:
+                print(f"[Recommend] image API empty data for {title}: {resp.text[:400]}")
+                return ""
+
+            img_info = data[0]
+
+            # 1. 直接返回 URL
+            if img_info.get("url"):
+                url = img_info["url"]
+                print(f"[Recommend] generated image url for {title}: {url}")
+                return url
+
+            # 2. 处理 base64 数据
+            b64_data = img_info.get("b64_json")
+            if b64_data:
+                try:
+                    filename = f"{uuid.uuid4().hex}.png"
+                    save_dir = os.path.join(settings.MEDIA_ROOT, "recipes")
+                    os.makedirs(save_dir, exist_ok=True)
+                    file_path = os.path.join(save_dir, filename)
+                    with open(file_path, "wb") as f:
+                        f.write(base64.b64decode(b64_data))
+
+                    url = settings.MEDIA_URL.rstrip("/") + "/recipes/" + filename
+                    print(f"[Recommend] generated local image for {title}: {url}")
+                    return url
+                except Exception as e:
+                    print(f"[Recommend] save b64 image error: {e}")
+                    return ""
+        except Exception as e:
+            print(f"[Recommend] generate image error: {e}")
+        return ""
+
     def _get_ai_combos(ings: list[str], tgt_cal: float):
         api_key = os.getenv("CHATECNU_API_KEY")
         print(f"[Recommend] env CHATECNU_API_KEY present={bool(api_key)}")
         if not api_key:
             return []
+
         prompt = (
             f"请根据食材列表 {', '.join(ings)} ，推荐 2 组中式组合：每组包含一份热菜(类别 recai)和一份汤羹或凉菜(类别 tanggeng/liangcai)，"
-            f"总热量不超过 {round(tgt_cal)} 千卡。请以 JSON 格式返回：{{\n  \"combos\":[{{\n      \"main\": {{...}},\n      \"side\": {{...}},\n      \"total_calories\": 0\n  }}]\n}} ，不要附加解释文字。"
+            f"一组严格用食材列表中的食材，另一组用食材列表中的食材和一些其他食材，"
+            f"总热量不超过 {round(tgt_cal)} 千卡。"
+            "请以 JSON 格式返回，如：{\n"
+            "  \"combos\": [\n"
+            "    {\n"
+            "      \"main\": {\n"
+            "        \"title\": \"番茄炒蛋\",\n"
+            "        \"category\": \"recai\",\n"
+            "        \"calories\": \"300kcal\",\n"
+            "        \"ingredients\": [\n"
+            "          {\"name\": \"番茄\", \"quantity\": \"100g\"},\n"
+            "          {\"name\": \"鸡蛋\", \"quantity\": \"2个\"}\n"
+            "        ],\n"
+            "        \"steps\": [\"step1\", \"step2\"],\n"
+            "        \"nutrition\": {\"脂肪\": \"12g\", \"纤维素\": \"0.5g\", \"碳水\": \"2g\", \"蛋白质\": \"15g\"},\n"
+            "        \"cook_time\": \"15分钟\",\n"
+            "        \"difficulty\": \"简单\",\n"
+            "        \"description\": \"一道经典快手家常菜，酸甜可口，营养丰富。\"\n"
+            "      },\n"
+            "      \"side\": { ... },\n"
+            "      \"total_calories\": 600\n"
+            "    }\n"
+            "  ]\n"
+            "}\n"
+            "steps尽可能详细，不要附加解释文字，同时返回 nutrition 字段（键使用中文名称，数值带单位的字符串）、cook_time 字段（示例\"15分钟\"或\"1小时\"）、difficulty 字段（简单/中等/困难三选一）以及一句话 description。"
         )
         payload = {
             "messages": [
@@ -256,7 +347,7 @@ def recommend_view(request: HttpRequest):
             # ingredients: list[str] -> list[dict]
             ings = item.get("ingredients")
             if isinstance(ings, list) and (not ings or isinstance(ings[0], str)):
-                item["ingredients"] = [{"name": n} for n in ings]
+                item["ingredients"] = [{"name": n, "quantity": ""} for n in ings]
             # 保存到临时表
             temp_recipe, created = TempRecipeFlat.objects.get_or_create(
                 title=item["title"],
@@ -267,12 +358,61 @@ def recommend_view(request: HttpRequest):
                     "cook_time": item.get("cook_time", ""),
                     "difficulty": item.get("difficulty", ""),
                     "ingredients": item.get("ingredients", []),
+                    # 新增字段保存
+                    "steps": item.get("steps", []),
+                    "nutrition": item.get("nutrition"),
+                    "description": item.get("description", ""),
+                    "servings": item.get("servings", ""),
                 },
             )
+            # 若已存在但之前未保存步骤等字段，则补充更新
+            if not created:
+                updated = False
+                for field in [
+                    ("steps", item.get("steps")),
+                    ("nutrition", item.get("nutrition")),
+                    ("description", item.get("description")),
+                    ("servings", item.get("servings")),
+                    ("cook_time", item.get("cook_time")),
+                    ("difficulty", item.get("difficulty")),
+                ]:
+                    fname, fval = field
+                    if fval and not getattr(temp_recipe, fname):
+                        setattr(temp_recipe, fname, fval)
+                        updated = True
+                if updated:
+                    try:
+                        temp_recipe.save()
+                    except IntegrityError:
+                        pass
+            # 若缺少图片，自动调用图片生成
+            if not temp_recipe.image_url:
+                img_url = _generate_image(temp_recipe.title)
+                if img_url:
+                    temp_recipe.image_url = img_url
+                    try:
+                        temp_recipe.save(update_fields=["image_url"])
+                    except IntegrityError:
+                        pass
             if created:
                 print(f"[Recommend] [TempRecipe] saved: {temp_recipe.title}")
             item_dict = _serialize(temp_recipe)
             item_dict["title"] = item_dict.get("title", "") + "（AI生成）"
+            # 保留 AI 返回的详细用量和步骤信息
+            if "steps" in item:
+                item_dict["steps"] = item["steps"]
+            if "ingredients" in item:
+                item_dict["ingredients"] = item["ingredients"]
+            if "nutrition" in item:
+                item_dict["nutrition"] = item["nutrition"]
+            if "description" in item:
+                item_dict["description"] = item["description"]
+            if "cook_time" in item:
+                item_dict["cook_time"] = item["cook_time"]
+            if "difficulty" in item:
+                item_dict["difficulty"] = item["difficulty"]
+            # 确保返回最新图片链接
+            item_dict["image_url"] = temp_recipe.image_url
             c[part] = item_dict
 
     

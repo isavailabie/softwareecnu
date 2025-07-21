@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import CartItem, Recipe, Ingredient, RecipeIngredient, FavoriteIngredient, FridgeItem, UserCalorieRecord, UserProfile
 from django.utils import timezone
-from recommender.models import RecipeFlat
+from recommender.models import RecipeFlat, TempRecipeFlat
 import datetime
 import json
 
@@ -728,6 +728,68 @@ def recipe_detail(request, recipe_id):
         'match_percentage': request.GET.get('match', '100%')
     }
     
+    return render(request, 'fruit/recipe_detail.html', context)
+
+
+# AI 菜谱详情页（来自 TempRecipeFlat）
+@login_required
+def ai_recipe_detail(request, recipe_id):
+    """AI 菜谱详情：读取 temp_recommender_recipeflat (TempRecipeFlat)"""
+    recipe = get_object_or_404(TempRecipeFlat, id=recipe_id)
+
+    ingredients_list = [
+        {
+            'ingredient': {'name': item.get('name', '')},
+            'amount': item.get('quantity', '') or item.get('amount', '')
+        }
+        for item in (recipe.ingredients or [])
+    ]
+
+    # 处理步骤，与 recipe_detail 相同逻辑
+    steps = []
+    if isinstance(recipe.steps, list):
+        for i, s in enumerate(recipe.steps):
+            if not s:
+                continue
+            if isinstance(s, dict):
+                desc = s.get('description') or s.get('step') or ''
+                tip = s.get('tip', '')
+            else:
+                desc = str(s)
+                tip = ''
+            steps.append({
+                'number': i + 1,
+                'title': f"步骤 {i + 1}",
+                'description': desc.strip(),
+                'tip': tip
+            })
+    elif recipe.steps:
+        for i, step_text in enumerate(str(recipe.steps).split('\n')):
+            if step_text.strip():
+                steps.append({
+                    'number': i + 1,
+                    'title': f"步骤 {i + 1}",
+                    'description': step_text.strip(),
+                    'tip': ''
+                })
+
+    nutrition_data = recipe.nutrition or {}
+    if isinstance(nutrition_data, dict):
+        nutrition = [{'label': k, 'value': v} for k, v in nutrition_data.items()]
+    elif isinstance(nutrition_data, list):
+        nutrition = nutrition_data
+    else:
+        nutrition = []
+
+    context = {
+        'recipe': recipe,
+        'ingredients': ingredients_list,
+        'steps': steps,
+        'nutrition': nutrition,
+        'tips': [],
+        'match_percentage': 'AI'
+    }
+
     return render(request, 'fruit/recipe_detail.html', context)
 
 

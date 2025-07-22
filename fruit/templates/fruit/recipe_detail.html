@@ -266,13 +266,28 @@
             alert('请先评分！');
             return;
         }
-        
-        if (reviewText.trim() === '') {
-            alert('请输入评价内容！');
-            return;
-        }
-        
-        alert(`感谢您的评价！您给了${activeStars}星评价。`);
+
+        // 发送 AJAX 请求提交评分
+        fetch('{% url "submit_rating" recipe.id %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `rating=${activeStars}`
+        }).then(res => res.json())
+          .then(data => {
+              if (data.success) {
+                  // 更新评分显示
+                  document.querySelector('.rating-score').innerText = data.rating_avg.toFixed(1);
+                  document.querySelector('.rating-count').innerText = `基于 ${data.rating_count} 个评价`;
+                  alert('感谢您的评价！');
+              } else {
+                  alert(data.error || '提交失败');
+              }
+          }).catch(() => alert('网络错误'));
+
+        // 清理表单
         document.getElementById('review-text').value = '';
         stars.forEach(star => {
             star.classList.remove('active');

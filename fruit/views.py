@@ -807,6 +807,28 @@ def recipe_detail(request, recipe_id):
     return render(request, 'fruit/recipe_detail.html', context)
 
 
+from django.views.decorators.http import require_POST
+
+# 提交评分
+@login_required
+@require_POST
+def submit_rating(request, recipe_id):
+    """接收用户评分并更新 RecipeFlat.rating_sum 与 rating_count"""
+    try:
+        rating = int(request.POST.get('rating', 0))
+        if rating < 1 or rating > 5:
+            return JsonResponse({'success': False, 'error': '评分需在1~5之间'})
+    except (TypeError, ValueError):
+        return JsonResponse({'success': False, 'error': '无效评分'})
+
+    recipe = get_object_or_404(RecipeFlat, id=recipe_id)
+    recipe.rating_sum = (recipe.rating_sum or 0) + rating
+    recipe.rating_count = (recipe.rating_count or 0) + 1
+    recipe.save(update_fields=['rating_sum', 'rating_count'])
+
+    avg = round(recipe.rating_sum / recipe.rating_count, 1)
+    return JsonResponse({'success': True, 'rating_avg': avg, 'rating_count': recipe.rating_count})
+
 # AI 菜谱详情页（来自 TempRecipeFlat）
 @login_required
 def ai_recipe_detail(request, recipe_id):

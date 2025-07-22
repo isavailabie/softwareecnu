@@ -13,6 +13,13 @@ import datetime, re, random, os, requests, base64, uuid
 from django.conf import settings
 
 
+def _cal_num(cal_str: str) -> float:
+    """Extract number value from a calorie string like '200kcal/100g'."""
+    import re
+    m = re.search(r"(\d+)", cal_str or "")
+    return float(m.group(1)) if m else 0.0
+
+
 def _score_recipe(recipe: RecipeFlat, provided: set, target_calories: float) -> float:
     """综合打分：
     1. 热量差距得分 (越接近越高)
@@ -142,9 +149,6 @@ def recommend_view(request: HttpRequest):
     print(f"[Recommend] candidate_with_score={len(candidates)}")
 
     # -------- 组合推荐：一菜一汤 或 一菜一凉菜 ---------
-    def _cal_num(cal_str: str) -> float:
-        m = re.search(r"(\d+)", cal_str or "")
-        return float(m.group(1)) if m else 0.0
 
     # 分类列表
     recai_list, tanggeng_list, liangcai_list = [], [], []

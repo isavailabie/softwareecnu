@@ -163,7 +163,7 @@
         <div class="rating-header">
             <h3><i class="fas fa-star"></i> 用户评价</h3>
             <div class="rating-stats">
-                <div class="rating-score">4.8</div>
+                <div class="rating-score">{{ rating_avg|floatformat:1 }}</div>
                 <div class="rating-stars">
                     <i class="fas fa-star"></i>
                     <i class="fas fa-star"></i>
@@ -171,7 +171,7 @@
                     <i class="fas fa-star"></i>
                     <i class="fas fa-star"></i>
                 </div>
-                <div class="rating-count">基于 1,234 个评价</div>
+                <div class="rating-count">基于 {{ rating_count }} 个评价</div>
             </div>
         </div>
         

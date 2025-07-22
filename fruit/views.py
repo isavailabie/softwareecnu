@@ -787,13 +787,21 @@ def recipe_detail(request, recipe_id):
     else:
         nutrition = []
     
+    # Add average rating calculation
+    if getattr(recipe, 'rating_count', 0):
+        rating_avg = round(getattr(recipe, 'rating_sum', 0) / recipe.rating_count, 1)
+    else:
+        rating_avg = 0
+    
     context = {
         'recipe': recipe,
         'ingredients': ingredients_list,
         'steps': steps,
         'nutrition': nutrition,
         'tips': [],
-        'match_percentage': request.GET.get('match', '100%')
+        'match_percentage': request.GET.get('match', '100%'),
+        'rating_avg': rating_avg,
+        'rating_count': getattr(recipe, 'rating_count', 0),
     }
     
     return render(request, 'fruit/recipe_detail.html', context)

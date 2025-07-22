@@ -18,6 +18,7 @@ urlpatterns = [
     path('recommend_recipes/', views.recommend_recipes, name='recommend_recipes'),
     path('recipe/<int:recipe_id>/', views.recipe_detail, name='recipe_detail'),
     path('recipe/<int:recipe_id>/rate/', views.submit_rating, name='submit_rating'),
+    path('recipe/<int:recipe_id>/add-to-daily/', views.add_recipe_to_daily, name='add_recipe_to_daily'),
     path('ai_recipe/<int:recipe_id>/', views.ai_recipe_detail, name='ai_recipe_detail'),
     path('fridge/', views.recognize_fruit, name='recognize_fruit'),
     path('toggle-favorite/', views.toggle_favorite_ingredient, name='toggle_favorite_ingredient'),

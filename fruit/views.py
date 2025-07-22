@@ -829,6 +829,41 @@ def submit_rating(request, recipe_id):
     avg = round(recipe.rating_sum / recipe.rating_count, 1)
     return JsonResponse({'success': True, 'rating_avg': avg, 'rating_count': recipe.rating_count})
 
+
+# 将菜谱添加到今日热量记录
+@login_required
+@require_POST
+def add_recipe_to_daily(request, recipe_id):
+    """点击“开始制作”后将菜谱计入用户今日记录（默认晚餐）。"""
+    recipe = get_object_or_404(RecipeFlat, id=recipe_id)
+
+    # 提取热量数字，示例 "205大卡/100g"→205
+    import re
+    cal_match = re.search(r'(\d+)', recipe.calories or '')
+    calories = int(cal_match.group(1)) if cal_match else 0
+
+    today = timezone.now().date()
+    record, _ = UserCalorieRecord.objects.get_or_create(user=request.user, date=today, defaults={
+        'daily_target': request.user.profile.get_recommended_calories() if hasattr(request.user, 'profile') else 1500
+    })
+
+    # 选择晚餐字段
+    if record.dinner_food:
+        record.dinner_food = f"{record.dinner_food}+{recipe.title}"
+        record.dinner_calories += calories
+    else:
+        record.dinner_food = recipe.title
+        record.dinner_calories = calories
+
+    record.save(update_fields=['dinner_food', 'dinner_calories'])
+
+    return JsonResponse({
+        'success': True,
+        'dinner_food': record.dinner_food,
+        'dinner_calories': record.dinner_calories,
+        'total': record.total_calories,
+    })
+
 # AI 菜谱详情页（来自 TempRecipeFlat）
 @login_required
 def ai_recipe_detail(request, recipe_id):

@@ -298,7 +298,22 @@
     // 开始制作功能
     const startCooking = document.getElementById('start-cooking');
     startCooking.addEventListener('click', function() {
-        alert('开始制作{{ recipe.title }}！祝您烹饪愉快！');
+        fetch('{% url "add_recipe_to_daily" recipe.id %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: ''
+        }).then(res => res.json())
+          .then(data => {
+              if (data.success) {
+                  alert('已记录到今日热量表！');
+                  window.location.href = '{% url "my_view" %}';
+              } else {
+                  alert(data.error || '记录失败');
+              }
+          }).catch(() => alert('网络错误'));
     });
 
     // 分享功能

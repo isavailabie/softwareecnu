@@ -324,18 +324,23 @@ def my_view(request):
             except (ValueError, TypeError) as e:
                 messages.error(request, f'更新个人信息失败: {str(e)}')
                 return redirect('my_view')
-        
+            
+        def safe_int(val, default=0):
+            try:
+                return int(val)
+            except (TypeError, ValueError):
+                return default
         # 检查是AJAX请求还是表单提交
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             # 处理AJAX请求
             data = json.loads(request.body)
             
             breakfast_food = data.get('breakfast_food', '')
-            breakfast_calories = int(data.get('breakfast_calories', 0))
+            breakfast_calories = safe_int(request.POST.get('breakfast_calories'))
             lunch_food = data.get('lunch_food', '')
-            lunch_calories = int(data.get('lunch_calories', 0))
+            lunch_calories = safe_int(request.POST.get('lunch_calories'))
             dinner_food = data.get('dinner_food', '')
-            dinner_calories = int(data.get('dinner_calories', 0))
+            dinner_calories = safe_int(request.POST.get('dinner_calories'))
             
             # 获取推荐热量
             recommended_calories = profile.get_recommended_calories()
@@ -378,11 +383,11 @@ def my_view(request):
         else:
             # 处理常规表单提交
             breakfast_food = request.POST.get('breakfast_food', '')
-            breakfast_calories = int(request.POST.get('breakfast_calories', 0))
+            breakfast_calories = safe_int(request.POST.get('breakfast_calories'))
             lunch_food = request.POST.get('lunch_food', '')
-            lunch_calories = int(request.POST.get('lunch_calories', 0))
+            lunch_calories = safe_int(request.POST.get('lunch_calories'))
             dinner_food = request.POST.get('dinner_food', '')
-            dinner_calories = int(request.POST.get('dinner_calories', 0))
+            dinner_calories = safe_int(request.POST.get('dinner_calories'))
             
             # 获取推荐热量
             recommended_calories = profile.get_recommended_calories()
@@ -429,19 +434,24 @@ def my_view(request):
         date__range=[start_date, end_date]
     ).order_by('-date')
     
+    # 获取推荐热量（必须在chart_data前定义，避免未赋值）
+    recommended_calories = profile.get_recommended_calories()
     # 准备图表数据
     chart_data = {
         'week': {
             'labels': [],
-            'data': []
+            'data': [],
+            'target': []
         },
         'last-week': {
             'labels': [],
-            'data': []
+            'data': [],
+            'target': []
         },
         'month': {
             'labels': [],
-            'data': []
+            'data': [],
+            'target': []
         }
     }
     
@@ -451,24 +461,27 @@ def my_view(request):
         date = current_date - datetime.timedelta(days=i)
         weekday = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][date.weekday()]
         chart_data['week']['labels'].append(weekday)
-        
         try:
             record = UserCalorieRecord.objects.get(user=request.user, date=date)
             chart_data['week']['data'].append(record.total_calories)
+            chart_data['week']['target'].append(record.daily_target)
         except UserCalorieRecord.DoesNotExist:
             chart_data['week']['data'].append(0)
+            # 没有记录时用推荐热量
+            chart_data['week']['target'].append(recommended_calories)
     
     # 上周数据
     for i in range(13, 6, -1):
         date = current_date - datetime.timedelta(days=i)
         weekday = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][date.weekday()]
         chart_data['last-week']['labels'].append(weekday)
-        
         try:
             record = UserCalorieRecord.objects.get(user=request.user, date=date)
             chart_data['last-week']['data'].append(record.total_calories)
+            chart_data['last-week']['target'].append(record.daily_target)
         except UserCalorieRecord.DoesNotExist:
             chart_data['last-week']['data'].append(0)
+            chart_data['last-week']['target'].append(recommended_calories)
     
     # 本月数据（按周）
     # 简化处理，每7天为一周
@@ -483,23 +496,34 @@ def my_view(request):
         )
         if week_records.exists():
             total = sum(record.total_calories for record in week_records)
+            avg_target = int(sum(record.daily_target for record in week_records) / week_records.count())
             chart_data['month']['data'].append(total)
+            chart_data['month']['target'].append(avg_target)
         else:
             chart_data['month']['data'].append(0)
+            chart_data['month']['target'].append(recommended_calories)
     
     chart_data['month']['labels'].reverse()
     chart_data['month']['data'].reverse()
+    chart_data['month']['target'].reverse()
     
-    # 获取推荐热量
-    recommended_calories = profile.get_recommended_calories()
-    
+    lunch_suggest = None
+    dinner_suggest = None
+    if today_record and today_record.breakfast_calories and not today_record.lunch_calories and not today_record.dinner_calories:
+        remain = today_record.remaining_calories
+        lunch_suggest = remain // 2
+        dinner_suggest = remain - lunch_suggest
     context = {
         'today_record': today_record,
         'history_records': history_records,
         'chart_data': json.dumps(chart_data),
         'today_date': today.strftime('%Y年%m月%d日'),
         'profile': profile,
-        'recommended_calories': recommended_calories
+        'recommended_calories': recommended_calories,
+        'lunch_suggest': lunch_suggest,
+        'dinner_suggest': dinner_suggest,
+        'calorie_difference': today_record.daily_target - today_record.total_calories if today_record else 0,
+        'calorie_exceed': today_record.total_calories - today_record.daily_target if today_record else 0,
     }
     
     return render(request, 'fruit/my.html', context)
@@ -508,14 +532,18 @@ def my_view(request):
 @login_required
 def edit_calorie_record(request, record_id):
     record = get_object_or_404(UserCalorieRecord, id=record_id, user=request.user)
-    
+    def safe_int(val, default=0):
+        try:
+            return int(val)
+        except (TypeError, ValueError):
+            return default
     if request.method == 'POST':
         record.breakfast_food = request.POST.get('breakfast_food', '')
-        record.breakfast_calories = int(request.POST.get('breakfast_calories', 0))
+        record.breakfast_calories = safe_int(request.POST.get('breakfast_calories'))
         record.lunch_food = request.POST.get('lunch_food', '')
-        record.lunch_calories = int(request.POST.get('lunch_calories', 0))
+        record.lunch_calories = safe_int(request.POST.get('lunch_calories'))
         record.dinner_food = request.POST.get('dinner_food', '')
-        record.dinner_calories = int(request.POST.get('dinner_calories', 0))
+        record.dinner_calories = safe_int(request.POST.get('dinner_calories'))
         record.save()
         
         messages.success(request, '记录已更新！')

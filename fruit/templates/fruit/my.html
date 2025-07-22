@@ -134,7 +134,7 @@
             
             <div class="user-info">
                 <h1 class="welcome-text" id="username-display">您好，亲爱的{{ user.username }}</h1>
-                <p>欢迎查看您的健康档案，今日减脂计划已准备就绪！</p>
+                <p>欢迎查看您的健康档案，今日健康饮食计划已准备就绪！</p>
                 
                 <div class="user-stats">
                     <div class="stat-item">
@@ -143,7 +143,7 @@
                     </div>
                     <div class="stat-item">
                         <div class="stat-value">{{ history_records.0.total_calories|default:"0" }}</div>
-                        <div class="stat-label">昨日摄入</div>
+                        <div class="stat-label">今日摄入</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value">{{ today_record.completion_percentage|default:"0" }}%</div>
@@ -225,20 +225,19 @@
             </form>
         </div>
         
-        <!-- 新增：热量记录表单 -->
+        <!-- 热量记录表单 -->
         <div class="calorie-form-container">
             <div class="form-title">
                 <i class="fas fa-utensils"></i>
                 <h3 style="display:inline-block;">记录今日热量摄入</h3>
             </div>
-            <!-- 热量目标展示栏，紧跟标题下方 -->
             <div class="daily-target-bar" style="display: flex; align-items: center; justify-content: flex-start; margin-bottom: 18px; gap: 12px;">
                 <span>今日热量目标：<span id="daily-target-display">{{ today_record.daily_target|default:recommended_calories }}</span> 千卡</span>
                 <button type="button" class="btn btn-outline btn-sm" id="edit-daily-target-btn" style="padding: 2px 10px; font-size: 0.95em; margin-left: 8px;">
                     <i class="fas fa-edit"></i>
                 </button>
             </div>
-            <form id="calorieForm" class="calorie-form">
+            <form id="calorieForm" class="calorie-form" method="post" action="{% url 'my_view' %}">
                 {% csrf_token %}
                 <!-- 早餐部分 -->
                 <div class="meal-section">
@@ -246,79 +245,66 @@
                         <i class="fas fa-sun"></i>
                         <h4>早餐</h4>
                     </div>
-                    
                     <div class="form-group">
                         <label for="breakfast-food">食物名称</label>
-                        <input type="text" id="breakfast-food" class="form-control" placeholder="例如：全麦面包 + 牛奶" 
+                        <input type="text" id="breakfast-food" name="breakfast_food" class="form-control" placeholder="例如：全麦面包" 
                                value="{{ today_record.breakfast_food }}">
                     </div>
-                    
                     <div class="form-group">
                         <label for="breakfast-calories">热量（千卡）</label>
-                        <input type="number" id="breakfast-calories" class="form-control" placeholder="输入热量值"
+                        <input type="number" id="breakfast-calories" name="breakfast_calories" class="form-control" placeholder="输入热量值"
                                value="{{ today_record.breakfast_calories }}">
                     </div>
-                    
                     <div class="meal-total" id="breakfast-total">早餐总计: {{ today_record.breakfast_calories|default:"0" }} 千卡</div>
                 </div>
-                
                 <!-- 午餐部分 -->
                 <div class="meal-section">
                     <div class="meal-header">
                         <i class="fas fa-cloud-sun"></i>
                         <h4>午餐</h4>
                     </div>
-                    
                     <div class="form-group">
                         <label for="lunch-food">食物名称</label>
-                        <input type="text" id="lunch-food" class="form-control" placeholder="例如：番茄鸡胸肉"
+                        <input type="text" id="lunch-food" name="lunch_food" class="form-control" placeholder="例如：番茄牛腩盖饭"
                                value="{{ today_record.lunch_food }}">
                     </div>
-                    
                     <div class="form-group">
                         <label for="lunch-calories">热量（千卡）</label>
-                        <input type="number" id="lunch-calories" class="form-control" placeholder="输入热量值"
+                        <input type="number" id="lunch-calories" name="lunch_calories" class="form-control" placeholder="输入热量值"
                                value="{{ today_record.lunch_calories }}">
                     </div>
-                    
                     <div class="meal-total" id="lunch-total">午餐总计: {{ today_record.lunch_calories|default:"0" }} 千卡</div>
                 </div>
-                
                 <!-- 晚餐部分 -->
                 <div class="meal-section">
                     <div class="meal-header">
                         <i class="fas fa-moon"></i>
                         <h4>晚餐</h4>
                     </div>
-                    
                     <div class="form-group">
                         <label for="dinner-food">食物名称</label>
-                        <input type="text" id="dinner-food" class="form-control" placeholder="例如：蔬菜沙拉"
+                        <input type="text" id="dinner-food" name="dinner_food" class="form-control" placeholder="例如：蔬菜沙拉"
                                value="{{ today_record.dinner_food }}">
                     </div>
-                    
                     <div class="form-group">
                         <label for="dinner-calories">热量（千卡）</label>
-                        <input type="number" id="dinner-calories" class="form-control" placeholder="输入热量值"
+                        <input type="number" id="dinner-calories" name="dinner_calories" class="form-control" placeholder="输入热量值"
                                value="{{ today_record.dinner_calories }}">
                     </div>
-                    
                     <div class="meal-total" id="dinner-total">晚餐总计: {{ today_record.dinner_calories|default:"0" }} 千卡</div>
                 </div>
+                <div class="daily-total">
+                    今日总摄入: <span id="daily-total-calories">{{ today_record.total_calories|default:"0" }}</span> 千卡
+                </div>
+                <div class="form-actions">
+                    <button type="reset" class="btn btn-outline" id="reset-form">
+                        <i class="fas fa-redo"></i> 重置
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存记录
+                    </button>
+                </div>
             </form>
-            
-            <div class="daily-total">
-                今日总摄入: <span id="daily-total-calories">{{ today_record.total_calories|default:"0" }}</span> 千卡
-            </div>
-            
-            <div class="form-actions">
-                <button type="button" class="btn btn-outline" id="reset-form">
-                    <i class="fas fa-redo"></i> 重置
-                </button>
-                <button type="button" class="btn btn-primary" id="save-calories">
-                    <i class="fas fa-save"></i> 保存记录
-                </button>
-            </div>
         </div>
         
         <!-- 热量卡片 -->
@@ -342,7 +328,7 @@
                             <div class="detail-label">已摄入</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-value remaining">{{ today_record.remaining_calories|default:"1500" }}</div>
+                            <div class="detail-value remaining">{{ today_record.remaining_calories|default:"0" }}</div>
                             <div class="detail-label">剩余可摄入</div>
                         </div>
                         <div class="detail-item">
@@ -353,24 +339,34 @@
                 </div>
                 
                 <div class="calorie-recommend">
-                    <h3 class="recommend-title"><i class="fas fa-lightbulb"></i> 晚餐建议</h3>
+                    <h3 class="recommend-title"><i class="fas fa-lightbulb"></i> 三餐建议</h3>
                     <ul class="recommend-list">
-                        {% if today_record and today_record.remaining_calories > 0 %}
-                            <li>今日剩余可摄入 <strong>{{ today_record.remaining_calories }}</strong> 千卡</li>
-                            <li>晚餐推荐选择热量≤{{ today_record.remaining_calories|default:"500" }}千卡的菜品</li>
-                            <li>推荐：蔬菜沙拉配鸡胸肉（约350千卡）</li>
-                            <li>可选：番茄鸡蛋汤（约200千卡）</li>
-                            <li>避免：油炸食品、高糖食物</li>
-                        {% elif today_record and today_record.remaining_calories <= 0 %}
-                            <li class="exceeded">今日已超标 <strong>{{ today_record.remaining_calories|cut:"-" }}</strong> 千卡</li>
-                            <li>建议增加运动消耗多余热量</li>
-                            <li>晚餐推荐低热量食物：蔬菜汤（约150千卡）</li>
-                            <li>明天注意控制热量摄入</li>
+                        {% if today_record %}
+                            {% with breakfast=today_record.breakfast_calories lunch=today_record.lunch_calories dinner=today_record.dinner_calories remain=today_record.remaining_calories target=today_record.daily_target total=today_record.total_calories %}
+                                {% if lunch_suggest and dinner_suggest %}
+                                    <li>您已吃过早餐，建议午餐摄入 <strong>{{ lunch_suggest }}</strong> 千卡，晚餐摄入 <strong>{{ dinner_suggest }}</strong> 千卡左右。</li>
+                                    <li>午餐建议：优质蛋白+蔬菜+主食，控制油脂。</li>
+                                    <li>晚餐建议：多蔬菜、适量蛋白，避免高热量主食。</li>
+                                {% elif breakfast and lunch and not dinner %}
+                                    <li>您已吃过早餐和午餐，建议晚餐摄入 <strong>{{ remain }}</strong> 千卡左右。</li>
+                                    <li>晚餐建议：多蔬菜、适量蛋白，避免高热量主食。</li>
+                                {% elif breakfast and lunch and dinner %}
+                                    {% if total < target %}
+                                        <li>今日已全部填写，距离目标还差 <strong>{{ calorie_difference }}</strong> 千卡，可适当加餐（如水果、坚果）。</li>
+                                    {% elif total > target %}
+                                        <li class="exceeded">今日已超标 <strong>{{ calorie_exceed }}</strong> 千卡，建议适当运动消耗热量。</li>
+                                        <li>明天继续保持健康饮食习惯哦，相信您一定可以的！</li>
+                                    {% else %}
+                                        <li>恭喜，今日刚好达标！请继续保持健康饮食习惯。</li>
+                                    {% endif %}
+                                {% elif not breakfast and not lunch and not dinner %}
+                                    <li>请先填写早餐，系统将为您智能推荐午餐和晚餐热量分配。</li>
+                                {% else %}
+                                    <li>请继续完善三餐信息，系统将为您智能推荐剩余热量分配。</li>
+                                {% endif %}
+                            {% endwith %}
                         {% else %}
-                            <li>选择热量≤500千卡的菜品</li>
-                            <li>推荐：蔬菜沙拉配鸡胸肉（约350千卡）</li>
-                            <li>可选：番茄鸡蛋汤（约200千卡）</li>
-                            <li>避免：油炸食品、高糖食物</li>
+                            <li>请填写今日三餐，系统将为您智能推荐热量分配。</li>
                         {% endif %}
                     </ul>
                 </div>
@@ -430,9 +426,11 @@
                         <td class="status-cell">
                             <div class="status-badge status-{{ record.status }}"></div>
                             <span>
-                                {% if record.status == 'exceed' %}
+                                {% if calorie_exceed > 0 %}
                                     已超标
-                                {% elif record.status == 'warning' %}
+                                {% elif calorie_difference > 300 %}
+                                    未达标
+                                {% elif calorie_difference > 0 and calorie_difference <= 300 %}
                                     接近上限
                                 {% else %}
                                     达标
@@ -663,7 +661,7 @@
                     datasets: [
                         {
                             label: '目标热量',
-                            data: data.labels.map(() => 1500),
+                            data: data.target,
                             backgroundColor: 'rgba(78, 205, 196, 0.2)',
                             borderColor: 'rgba(78, 205, 196, 1)',
                             borderWidth: 1,
@@ -675,10 +673,10 @@
                         {
                             label: '实际摄入',
                             data: data.data,
-                            backgroundColor: data.data.map(value => 
-                                value > 1500 ? 'rgba(231, 76, 60, 0.7)' : 'rgba(46, 204, 113, 0.7)'),
-                            borderColor: data.data.map(value => 
-                                value > 1500 ? 'rgba(231, 76, 60, 1)' : 'rgba(46, 204, 113, 1)'),
+                            backgroundColor: data.data.map((value, idx) => 
+                                value > (data.target && data.target.length ? data.target[idx] : 1500) ? 'rgba(231, 76, 60, 0.7)' : 'rgba(46, 204, 113, 0.7)'),
+                            borderColor: data.data.map((value, idx) => 
+                                value > (data.target && data.target.length ? data.target[idx] : 1500) ? 'rgba(231, 76, 60, 1)' : 'rgba(46, 204, 113, 1)'),
                             borderWidth: 1
                         }
                     ]

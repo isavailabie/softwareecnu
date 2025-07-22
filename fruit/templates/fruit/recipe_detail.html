@@ -234,18 +234,23 @@
         }
     });
 
-    // 评分功能
-    const stars = document.querySelectorAll('.star-rating i');
-    stars.forEach(star => {
-        star.addEventListener('click', function() {
-            const rating = parseInt(this.getAttribute('data-rating'));
-            stars.forEach((s, index) => {
-                if (index < rating) {
-                    s.classList.add('active');
-                } else {
-                    s.classList.remove('active');
-                }
-            });
+    // 评分功能（事件委托，兼容字体图标替换）
+    const starContainer = document.getElementById('star-rating');
+    // 所有星星节点集合，供提交时使用
+    const stars = starContainer.querySelectorAll('[data-rating]');
+    starContainer.addEventListener('click', function(e) {
+        // 允许点击 <i> 或其内部元素（例如 FontAwesome 替换后的 <svg>）
+        const targetIcon = e.target.closest('[data-rating]');
+        if (!targetIcon) return;
+        const rating = parseInt(targetIcon.getAttribute('data-rating'));
+
+        const starIcons = starContainer.querySelectorAll('[data-rating]');
+        starIcons.forEach((icon, index) => {
+            if (index < rating) {
+                icon.classList.add('active');
+            } else {
+                icon.classList.remove('active');
+            }
         });
     });
 
@@ -253,7 +258,7 @@
     const submitReview = document.getElementById('submit-review');
     submitReview.addEventListener('click', function() {
         const reviewText = document.getElementById('review-text').value;
-        const activeStars = document.querySelectorAll('.star-rating i.active').length;
+        const activeStars = starContainer.querySelectorAll('[data-rating].active').length;
         
         if (activeStars === 0) {
             alert('请先评分！');

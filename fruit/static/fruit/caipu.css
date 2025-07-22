@@ -532,15 +532,14 @@ body {
     margin-bottom: 15px;
 }
 
-.star-rating i {
+.star-rating [data-rating] {
     font-size: 1.5rem;
     color: #ddd;
     cursor: pointer;
     transition: color 0.3s;
 }
 
-.star-rating i:hover,
-.star-rating i.active {
+.star-rating [data-rating]:hover, .star-rating [data-rating].active, .star-rating svg:hover, .star-rating svg.active {
     color: var(--accent-color);
 }
 

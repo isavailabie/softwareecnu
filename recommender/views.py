@@ -223,7 +223,7 @@ def recommend_view(request: HttpRequest):
                     "Authorization": f"Bearer {api_key}",
                 },
                 json=payload,
-                timeout=30,
+                timeout=60,
             )
             if resp.status_code != 200:
                 print(f"[Recommend] image API http={resp.status_code}: {resp.text[:400]}")
@@ -313,7 +313,7 @@ def recommend_view(request: HttpRequest):
                     "Authorization": f"Bearer {api_key}",
                 },
                 json=payload,
-                timeout=20,
+                timeout=60,
             )
             if resp.status_code == 200:
                 print(f"[Recommend] AI status=200, raw={resp.text[:400]}")

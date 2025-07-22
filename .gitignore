@@ -4,3 +4,41 @@ __pycache__
 
 # Ignore migrations __pycache__
 */migrations/*/__pycache__
+
+# 忽略服务器设置和部署相关文件
+mine/settings.py
+Caddyfile
+*.service
+fanleme.service
+
+# 服务器和部署相关
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.cert
+
+# 数据库文件（如果不想包含）
+# *.sqlite3
+
+# 媒体和静态文件（通常由服务器生成）
+staticfiles/
+# media/  # 如果想保留媒体文件则注释掉
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# 虚拟环境
+venv/
+env/
+.venv/
+.env/
+.conda/

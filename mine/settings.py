@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-(!^u(&=to#9ua@o(#v4ye
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
 
-ALLOWED_HOSTS = ['49.235.133.21', 'fan-le-me.site', "127.0.0.1", "fanleme.wuzm219.cn"]
+ALLOWED_HOSTS = ['49.235.133.21', 'fan-le-me.site', "127.0.0.1", "fanleme.wuzm219.cn","localhost"]
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -149,6 +149,12 @@ DATABASE_ROUTERS = ['mine.db_router.RecommendRouter']
 # 添加必要的安全设置
 SECURE_HSTS_SECONDS = 3600
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_SSL_REDIRECT = True  # 已启用HTTPS
-SESSION_COOKIE_SECURE = True  # 已启用HTTPS
-CSRF_COOKIE_SECURE = True  # 已启用HTTPS
+SECURE_SSL_REDIRECT = False  # 如果使用HTTPS则设为True
+SESSION_COOKIE_SECURE = False  # 如果使用HTTPS则设为True
+CSRF_COOKIE_SECURE = False 
+
+
+
+# SECURE_SSL_REDIRECT = True  # 已启用HTTPS
+# SESSION_COOKIE_SECURE = True  # 已启用HTTPS
+# CSRF_COOKIE_SECURE = True  # 已启用HTTPS

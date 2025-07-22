@@ -1,0 +1,13 @@
+[Unit]
+Description=FanLeMe Django Application
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/your/project
+ExecStart=/path/to/your/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 mine.wsgi:application
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target 

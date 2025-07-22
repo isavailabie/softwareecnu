@@ -1,0 +1,25 @@
+fan-le-me.site fanleme.wuzm219.cn {
+    # 使用已有的HTTPS证书
+    tls /path/to/your/certificate.crt /path/to/your/private.key
+
+    # 设置日志
+    log {
+        output file /var/log/caddy/fanleme.log
+        format json
+    }
+
+    # 代理所有请求到Django应用
+    reverse_proxy localhost:8000
+
+    # 静态文件处理
+    handle /static/* {
+        root * /path/to/your/project/staticfiles
+        file_server
+    }
+
+    # 媒体文件处理
+    handle /media/* {
+        root * /path/to/your/project/media
+        file_server
+    }
+} 

@@ -248,8 +248,10 @@
         starIcons.forEach((icon, index) => {
             if (index < rating) {
                 icon.classList.add('active');
+                icon.style.color = '#ffd166';
             } else {
                 icon.classList.remove('active');
+                icon.style.color = '#ddd';
             }
         });
     });
@@ -272,7 +274,10 @@
         
         alert(`感谢您的评价！您给了${activeStars}星评价。`);
         document.getElementById('review-text').value = '';
-        stars.forEach(star => star.classList.remove('active'));
+        stars.forEach(star => {
+            star.classList.remove('active');
+            star.style.color = '#ddd';
+        });
     });
 
     // 开始制作功能

@@ -252,7 +252,7 @@
                     </div>
                     <div class="form-group">
                         <label for="breakfast-calories">热量（千卡）</label>
-                        <input type="number" id="breakfast-calories" name="breakfast_calories" class="form-control" placeholder="输入热量值"
+                        <input type="text" id="breakfast-calories" name="breakfast_calories" class="form-control" placeholder="输入热量值" min="0"
                                value="{{ today_record.breakfast_calories }}">
                     </div>
                     <div class="meal-total" id="breakfast-total">早餐总计: {{ today_record.breakfast_calories|default:"0" }} 千卡</div>
@@ -270,7 +270,7 @@
                     </div>
                     <div class="form-group">
                         <label for="lunch-calories">热量（千卡）</label>
-                        <input type="number" id="lunch-calories" name="lunch_calories" class="form-control" placeholder="输入热量值"
+                        <input type="text" id="lunch-calories" name="lunch_calories" class="form-control" placeholder="输入热量值" min="0"
                                value="{{ today_record.lunch_calories }}">
                     </div>
                     <div class="meal-total" id="lunch-total">午餐总计: {{ today_record.lunch_calories|default:"0" }} 千卡</div>
@@ -288,7 +288,7 @@
                     </div>
                     <div class="form-group">
                         <label for="dinner-calories">热量（千卡）</label>
-                        <input type="number" id="dinner-calories" name="dinner_calories" class="form-control" placeholder="输入热量值"
+                        <input type="text" id="dinner-calories" name="dinner_calories" class="form-control" placeholder="输入热量值" min="0"
                                value="{{ today_record.dinner_calories }}">
                     </div>
                     <div class="meal-total" id="dinner-total">晚餐总计: {{ today_record.dinner_calories|default:"0" }} 千卡</div>
@@ -744,7 +744,44 @@
             });
         });
 
-        // 弹窗相关
+        // 表达式解析与负数校正
+            function evaluateCalories(exp){
+                // 只允许数字、+ - * / () 空格
+                if(!/^[-+*/()\d\s]+$/.test(exp)) return NaN;
+                try{
+                    /* eslint-disable no-new-func */
+                    const val = Function(`'use strict'; return (${exp})`)();
+                    return Math.round(val);
+                }catch(e){
+                    return NaN;
+                }
+            }
+
+            ['breakfast-calories','lunch-calories','dinner-calories'].forEach(function(id){
+                const input = document.getElementById(id);
+                if(input){
+                    input.addEventListener('change', function(){
+                        const evaluated = evaluateCalories(this.value.trim());
+                        if(isNaN(evaluated) || evaluated < 0){
+                            this.value = 0;
+                        }else{
+                            this.value = evaluated;
+                        }
+                    });
+                }
+            });
+            ['breakfast-calories','lunch-calories','dinner-calories'].forEach(function(id){
+                const input = document.getElementById(id);
+                if(input){
+                    input.addEventListener('change', function(){
+                        if(parseInt(this.value) < 0){
+                            this.value = 0;
+                        }
+                    });
+                }
+            });
+
+            // 弹窗相关
         const modal = document.getElementById('daily-target-modal');
         const modalInput = document.getElementById('modal-daily-target-input');
         const editBtn = document.getElementById('edit-daily-target-btn');

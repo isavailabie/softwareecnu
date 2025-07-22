@@ -209,9 +209,13 @@
         <div class="fridge-container">
             <div class="fridge-header">
                 <h2><i class="fas fa-ice-cream"></i> 我的冰箱</h2>
-                <a class="fridge-btn" href="{% url 'recognize_fruit' %}">
-                    <i class="fas fa-camera"></i> 食材识别
-                </a>
+                <div>
+                    <a class="fridge-btn" href="{% url 'recognize_fruit' %}">
+                        <i class="fas fa-camera"></i> 食材识别
+                    </a>
+                    
+                </div>
+                
             </div>
             
             {% if items %}
@@ -230,6 +234,15 @@
                     </div>
                 </div>
                 {% endfor %}
+                <!-- 添加食材格子 -->
+                <div class="fridge-item add-item" id="openManualModal">
+                    <div class="item-icon" style="background:rgba(255,107,107,0.15);color:var(--primary-color);">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">添加食材</div>
+                    </div>
+                </div>
             </div>
             {% else %}
             <div class="empty-fridge">
@@ -290,6 +303,68 @@
         </footer>
     </div>
     
+    <!-- 手动添加食材模态框 -->
+    <div id="manualModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" id="closeManualModal">&times;</span>
+            <h3>手动添加食材</h3>
+            <form id="manualAddForm" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="itemName">食材名称</label>
+                    <input type="text" id="itemName" name="name" required />
+                </div>
+                <div class="form-group">
+                    <label for="itemQty">数量</label>
+                    <input type="number" id="itemQty" name="quantity" value="1" min="1" required />
+                </div>
+                <button type="submit" class="fridge-btn">保存</button>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        /* Modal Styles */
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);display:flex;justify-content:center;align-items:center;z-index:100;}
+        .modal-content{background:#fff;border-radius:var(--border-radius);padding:20px;min-width:300px;position:relative;box-shadow:var(--box-shadow);}
+        .modal-content h3{margin-top:0;}
+        .modal-content .close{position:absolute;right:10px;top:10px;cursor:pointer;font-size:24px;color:#999;}
+        .form-group{margin-bottom:15px;}
+        .form-group label{display:block;margin-bottom:5px;}
+        .form-group input{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;}
+    </style>
+
+    <script>
+        (()=>{
+            const modal=document.getElementById('manualModal');
+            const openBtn=document.getElementById('openManualModal');
+            const closeBtn=document.getElementById('closeManualModal');
+            const form=document.getElementById('manualAddForm');
+            const csrftoken=document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            openBtn.onclick=()=>modal.style.display='flex';
+            closeBtn.onclick=()=>modal.style.display='none';
+            window.onclick=e=>{if(e.target===modal){modal.style.display='none';}}
+
+            form.addEventListener('submit',async e=>{
+                e.preventDefault();
+                const data=new FormData(form);
+                data.append('source','manual');
+                const resp=await fetch("{% url 'add_to_fridge' %}",{
+                    method:'POST',
+                    headers:{'X-CSRFToken':csrftoken,'X-Requested-With':'XMLHttpRequest'},
+                    body:data
+                });
+                const json=await resp.json();
+                if(json.success){
+                    location.reload();
+                }else{
+                    alert(json.error||'添加失败');
+                }
+            });
+        })();
+    </script>
+
     <!-- 悬浮购物车按钮 -->
     <a href="/cart/" class="floating-cart" title="查看购物车">
         <i class="fas fa-shopping-cart"></i>

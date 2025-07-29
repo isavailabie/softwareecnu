@@ -52,13 +52,14 @@ class Command(BaseCommand):
         if args:
             json_path_str = args[0]
         else:
-            json_path_opt = options.get("json_path")
+            json_path_opt = options.get("json_path")   
             if isinstance(json_path_opt, list):
                 json_path_opt = json_path_opt[0] if json_path_opt else None
             json_path_str = json_path_opt
 
         default_category = options.get("category")
         # Default path fallback
+        
         if not json_path_str:
             json_path_str = r"F:\programming\data\liangcai1.json"
 
